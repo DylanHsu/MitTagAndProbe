@@ -1,9 +1,9 @@
-#ifndef MIT_TAGANDPROBE_MODS_MUON_NTUPLES_MOD_H
-#define MIT_TAGANDPROBE_MODS_MUON_NTUPLES_MOD_H
+#ifndef MIT_TAGANDPROBE_MODS_ELECTRON_NTUPLES_MOD_H
+#define MIT_TAGANDPROBE_MODS_ELECTRON_NTUPLES_MOD_H
 #include "MitAna/TreeMod/interface/BaseMod.h"
-#include "MitAna/DataTree/interface/MuonCol.h"
+#include "MitAna/DataTree/interface/ElectronCol.h"
 #include "MitAna/DataTree/interface/TriggerObjectCol.h"
-#include "MitPhysics/Utils/interface/MuonTools.h"
+#include "MitPhysics/Utils/interface/ElectronTools.h"
 #include "MitPhysics/Init/interface/ModNames.h"
 #include "MitAna/DataTree/interface/VertexFwd.h" 
 #include "TLorentzVector.h"
@@ -12,12 +12,12 @@
 
 namespace mithep {
   
-  class MuonNtuples : public BaseMod {
+  class ElectronNtuples : public BaseMod {
   public:
-    MuonNtuples(char const* name = "MuonNtuples", char const* title = "Flat-tree ntuples producer");
-    void SetTagMuonsName(char const* _name) { fTagMuonsName = _name; }
-    void SetProbeMuonsName(char const* _name) { fProbeMuonsName = _name; }
-    void SetAllMuonsName(char const* _name) { fAllMuonsName = _name; }
+    ElectronNtuples(char const* name = "ElectronNtuples", char const* title = "Flat-tree ntuples producer");
+    void SetTagElectronsName(char const* _name) { fTagElectronsName = _name; }
+    void SetProbeElectronsName(char const* _name) { fProbeElectronsName = _name; }
+    void SetAllElectronsName(char const* _name) { fAllElectronsName = _name; }
     void SetTriggerObjectsName(char const* _name) { fTriggerObjectsName = _name; }
     void SetTriggerMatchName(char const* _name) { fTriggerMatchName = _name; }
     void SetPVName(const char *n)             { fPVName = n;                }
@@ -27,17 +27,13 @@ namespace mithep {
     void SlaveBegin() override;
     void SlaveTerminate() override;
 
-    TString fTagMuonsName;
-    TString fProbeMuonsName;
-    TString fAllMuonsName;
+    TString fTagElectronsName;
+    TString fProbeElectronsName;
+    TString fAllElectronsName;
     TString fTriggerObjectsName;
     TString fTriggerMatchName;
     TString fPVName;  
 
-    //TnPEvent fPassingEvent;
-    //TnPEvent fAllEvent;
-    //TTree* fPassingNtuples;
-    //TTree* fAllNtuples;
     TTree* fNtuplesTree;
     unsigned int runNum, lumiSec, evtNum;   // event ID
     unsigned int npv;                       // number of primary vertices
@@ -47,7 +43,7 @@ namespace mithep {
     float        mass;                      // tag-probe mass
     int          qtag, qprobe;              // tag, probe charge
     TLorentzVector *tagTLV=0, *probeTLV=0;        // tag, probe 4-vector
-    ClassDef(MuonNtuples, 0)
+    ClassDef(ElectronNtuples, 0)
   };
 
 }
