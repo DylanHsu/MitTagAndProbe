@@ -12,9 +12,9 @@
 
 namespace mithep {
   
-  class NtuplesMod : public BaseMod {
+  class MuonNtuples : public BaseMod {
   public:
-    NtuplesMod(char const* name = "NtuplesMod", char const* title = "Flat-tree ntuples producer");
+    MuonNtuples(char const* name = "MuonNtuples", char const* title = "Flat-tree ntuples producer");
     void SetTagMuonsName(char const* _name) { fTagMuonsName = _name; }
     void SetProbeMuonsName(char const* _name) { fProbeMuonsName = _name; }
     void SetAllMuonsName(char const* _name) { fAllMuonsName = _name; }
@@ -47,7 +47,7 @@ namespace mithep {
     float        mass;                      // tag-probe mass
     int          qtag, qprobe;              // tag, probe charge
     TLorentzVector *tagTLV=0, *probeTLV=0;        // tag, probe 4-vector
-    ClassDef(NtuplesMod, 0)
+    ClassDef(MuonNtuples, 0)
   };
 
 }

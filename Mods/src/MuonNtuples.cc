@@ -1,4 +1,4 @@
-#include "MitTagAndProbe/Mods/interface/NtuplesMod.h"
+#include "MitTagAndProbe/Mods/interface/MuonNtuples.h"
 #include "MitPhysics/Init/interface/ModNames.h"
 #include "MitAna/DataTree/interface/Vertex.h"
 #include "MitAna/DataTree/interface/Names.h"
@@ -8,9 +8,9 @@
 #include <vector>
 #include <cstring>
 
-ClassImp(mithep::NtuplesMod)
+ClassImp(mithep::MuonNtuples)
 
-mithep::NtuplesMod::NtuplesMod(char const* _name/* = "mithep::NtuplesMod"*/, char const* _title/* = "Flat-tree ntuples producer"*/) :
+mithep::MuonNtuples::MuonNtuples(char const* _name/* = "mithep::MuonNtuples"*/, char const* _title/* = "Flat-tree ntuples producer"*/) :
   BaseMod(_name, _title),
   fTagMuonsName("TagMuons"),
   fProbeMuonsName("ProbeMuons"),
@@ -26,7 +26,7 @@ mithep::NtuplesMod::NtuplesMod(char const* _name/* = "mithep::NtuplesMod"*/, cha
 }
 
 void
-mithep::NtuplesMod::Process()
+mithep::MuonNtuples::Process()
 {
   mithep::MuonCol* tagMuons = GetObject<mithep::MuonCol>(fTagMuonsName);
   mithep::MuonCol* probeMuons = GetObject<mithep::MuonCol>(fProbeMuonsName);
@@ -187,7 +187,7 @@ mithep::NtuplesMod::Process()
 }
 
 void
-mithep::NtuplesMod::SlaveBegin()
+mithep::MuonNtuples::SlaveBegin()
 {
   fNtuplesTree = new TTree("Events", "Tag and probe events with 2 muons for Kevin's script");
   
@@ -222,7 +222,7 @@ mithep::NtuplesMod::SlaveBegin()
 }
 
 void
-mithep::NtuplesMod::SlaveTerminate()
+mithep::MuonNtuples::SlaveTerminate()
 {
 }
 

@@ -39,7 +39,7 @@ probeMuonIdMod.SetApplyD0Cut(False)
 probeMuonIdMod.SetApplyDZCut(False)
 probeMuonIdMod.SetOutputName('LooseMuons')
 
-ntuplesMod = mithep.NtuplesMod('NtuplesMod', 'Flat ntuples producer')
+ntuplesMod = mithep.MuonNtuples('MuonNtuples', 'Flat ntuples producer')
 ntuplesMod.SetTagMuonsName('TightMuons')
 ntuplesMod.SetProbeMuonsName('LooseMuons')
 ntuplesMod.SetTriggerObjectsName('SingleMuonTriggerObjects')
