@@ -32,18 +32,15 @@ mithep::MuonNtuples::Process()
   mithep::MuonCol* probeMuons = GetObject<mithep::MuonCol>(fProbeMuonsName);
   mithep::MuonCol* allMuons = GetObject<mithep::MuonCol>(fAllMuonsName);
   mithep::VertexCol* Vertices = GetObject<mithep::VertexCol>(fPVName);
-  //LoadEventObject(fTagMuonsName, fTagMuons);
-  //LoadEventObject(fProbeMuonsName, fProbeMuons);
-  //LoadEventObject(fAllMuonsName, fAllMuons);
-  //LoadEventObject(fPVName,fVertices);
 
   if (!tagMuons || !probeMuons || !allMuons) {
     std::cerr << "Could not find muons in this event." << std::endl;
     return;
   }
+  //printf("%d tag muons, %d probe muons, %d all muons, %d vertices\n",tagMuons->GetEntries(), probeMuons->GetEntries(), allMuons->GetEntries(), Vertices->GetEntries());
 
   bool doTriggerMatch(fTriggerMatchName.Length() != 0);
-
+  //bool doTriggerMatch=0;
   // Make vector of trigger objects and fill it
   std::vector<TriggerObject const*> matchObjects;
   if (doTriggerMatch) {
@@ -58,12 +55,14 @@ mithep::MuonNtuples::Process()
     for (unsigned iO(0); iO != fTriggerObjects->GetEntries(); ++iO) {
       TriggerObject const& to(*fTriggerObjects->At(iO));
 
-      if (std::strcmp(to.ModuleName(), fTriggerMatchName) == 0)
+      //if (std::strcmp(to.ModuleName(), fTriggerMatchName) == 0)
         matchObjects.push_back(&to);
     }
 
-    if (matchObjects.size() == 0)
+    if (matchObjects.size() == 0) {
+      //printf("matchObjects.size() == 0, continuing\n");
       return;
+    }
   }
   // Make tags vector, this sectino also includes the trigger matching
   std::vector<Muon const*> tags;
@@ -81,8 +80,10 @@ mithep::MuonNtuples::Process()
         if (dEta * dEta + dPhi * dPhi < 0.15 * 0.15)
           break;
       }
-      if (iT == matchObjects.size())
+      if (iT == matchObjects.size()) {
+        //printf("iT == matchObjects.size(), continuing\n");
         continue;
+      }
     }
     // END TRIGGER MATCHING
     // apply more cuts to tag
@@ -109,7 +110,10 @@ mithep::MuonNtuples::Process()
         break;
       }
     }
-    if(passed_probe) continue;
+    if(passed_probe) {
+      //printf("Passed probe, continuing\n"); 
+      continue;
+    }
     failing_probes.push_back(&anyMu);
   }
   
@@ -133,6 +137,8 @@ mithep::MuonNtuples::Process()
   runNum = GetEventHeader()->RunNum();
   lumiSec = GetEventHeader()->LumiSec();
 
+  //printf("tags vector has %lu entries, probes vector has %lu entries\n",tags.size(),probes.size());
+  
   for (Muon const* tag : tags) {
     for (Muon const* probe : probes) { 
       // candidates overlap in supercluster -> a same EG object
@@ -156,6 +162,7 @@ mithep::MuonNtuples::Process()
       TLorentzVector dimuon_system_TLV = *probeTLV + *tagTLV;
       mass = dimuon_system_TLV.M();
       pass = 1;
+      printf("Filling fNtuplesTree (runNum=%d, lumiSec=%d, evtNum=%d, pass=%d, mass=%f)\n",runNum,lumiSec,evtNum,pass,mass);
       fNtuplesTree->Fill();
     }
     
@@ -180,6 +187,7 @@ mithep::MuonNtuples::Process()
       TLorentzVector dimuon_system_TLV = *probeTLV + *tagTLV;
       mass = dimuon_system_TLV.M();
       pass = 0;
+      printf("Filling fNtuplesTree (runNum=%d, lumiSec=%d, evtNum=%d, pass=%d, mass=%f)\n",runNum,lumiSec,evtNum,pass,mass);
       fNtuplesTree->Fill();
 
     }

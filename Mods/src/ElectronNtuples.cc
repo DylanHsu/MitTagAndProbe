@@ -49,7 +49,7 @@ mithep::ElectronNtuples::Process()
     for (unsigned iO(0); iO != fTriggerObjects->GetEntries(); ++iO) {
       TriggerObject const& to(*fTriggerObjects->At(iO));
 
-      if (std::strcmp(to.ModuleName(), fTriggerMatchName) == 0)
+      //if (std::strcmp(to.ModuleName(), fTriggerMatchName) == 0)
         matchObjects.push_back(&to);
     }
 
