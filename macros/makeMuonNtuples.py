@@ -9,8 +9,6 @@ from MitAna.TreeMod.bambu import mithep, analysis
 hltMod = mithep.HLTMod()
 hltMod.SetBitsName('HLTBits')
 hltMod.SetTrigObjsName('SingleMuonTriggerObjects')
-#hltMod.AddTrigger('HLT_IsoMu24_v*')
-#hltMod.AddTrigger('HLT_IsoMu24_eta2p1_v*')
 # 2015 triggers:
 hltMod.AddTrigger('HLT_DoubleMu33NoFiltersNoVtx_v*')
 hltMod.AddTrigger('HLT_DoubleMu38NoFiltersNoVtx_v*')
@@ -123,6 +121,6 @@ ntuplesMod = mithep.MuonNtuples('MuonNtuples', 'Flat ntuples producer')
 ntuplesMod.SetTagMuonsName('TightMuons')
 ntuplesMod.SetProbeMuonsName('LooseMuons')
 ntuplesMod.SetTriggerObjectsName('SingleMuonTriggerObjects')
-ntuplesMod.SetTriggerMatchName('hltL3crIsoL1sMu16L1f0L2f16QL3f24QL3crIsoRhoFiltered0p15')
+#ntuplesMod.SetTriggerMatchName('hltL3crIsoL1sMu16L1f0L2f16QL3f24QL3crIsoRhoFiltered0p15')
 
 analysis.setSequence(hltMod * goodPVMod * pfPUMod * tagMuonIdMod * probeMuonIdMod * ntuplesMod)
