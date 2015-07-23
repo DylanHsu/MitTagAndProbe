@@ -3,6 +3,8 @@
 #include "MitTagAndProbe/Mods/interface/BitwiseMuonNtuples.h"
 #include "MitTagAndProbe/Mods/interface/ElectronNtuples.h"
 #include "MitTagAndProbe/Mods/interface/TriggerEfficiencyMod.h"
+#include <vector>
+#include "TLorentzVector.h"
 
 #ifdef __CLING__
 #pragma link off all globals;
@@ -17,4 +19,7 @@
 #pragma link C++ class mithep::BitwiseMuonNtuples+;
 #pragma link C++ class mithep::ElectronNtuples+;
 #pragma link C++ class mithep::TriggerEfficiencyMod+;
+#pragma link C++ class vector< vector<bool> >+;
+#pragma link C++ class vector< TLorentzVector* >+;
+
 #endif

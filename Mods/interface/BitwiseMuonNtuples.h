@@ -29,7 +29,8 @@ namespace mithep {
     TString fPVName;  
 
     TTree* fNtuplesTree;
-    MuonTools::EMuClassType MuClassTypes[10]={
+    TTree* fPropertiesTree;
+    std::vector<MuonTools::EMuClassType> MuClassTypes {
       MuonTools::kAll,
       MuonTools::kGlobal,
       MuonTools::kGlobalorTracker,
@@ -42,19 +43,19 @@ namespace mithep {
       MuonTools::kPFGlobalorTracker
     };
    
-    std::string MuClassTypeNames[10] = {
-      "MuonClass_All",
-      "MuonClass_Global",
-      "MuonClass_GlobalorTracker",
-      "MuonClass_GlobalTracker",
-      "MuonClass_Sta",
-      "MuonClass_TrackerMuon",
-      "MuonClass_CaloMuon",
-      "MuonClass_TrackerBased",
-      "MuonClass_GlobalOnly",
-      "MuonClass_PFGlobalorTracker"
+    std::vector<std::string> MuClassTypeNames {
+      "All",
+      "Global",
+      "GlobalorTracker",
+      "GlobalTracker",
+      "Sta",
+      "TrackerMuon",
+      "CaloMuon",
+      "TrackerBased",
+      "GlobalOnly",
+      "PFGlobalorTracker"
     };
-    MuonTools::EMuIdType MuIdTypes[12] = {
+    std::vector<MuonTools::EMuIdType> MuIdTypes {
       MuonTools::kWMuId,
       MuonTools::kZMuId,
       MuonTools::kTight,
@@ -69,22 +70,22 @@ namespace mithep {
       MuonTools::kMVAID_BDTG_IDIso
     };
 
-    std::string MuIdTypeNames[12]= {
-      "MuonId_WMuId",
-      "MuonId_ZMuId",
-      "MuonId_Tight",
-      "MuonId_MuonPOG2012CutBasedIdTight",
-      "MuonId_Loose",
-      "MuonId_WWMuIdV1",
-      "MuonId_WWMuIdV2",
-      "MuonId_WWMuIdV3",
-      "MuonId_WWMuIdV4",
-      "MuonId_NoId",
-      "MuonId_CustomId",
-      "MuonId_MVAID_BDTG_IDIso"
+    std::vector<std::string> MuIdTypeNames {
+      "WMuId",
+      "ZMuId",
+      "Tight",
+      "MuonPOG2012CutBasedIdTight",
+      "Loose",
+      "WWMuIdV1",
+      "WWMuIdV2",
+      "WWMuIdV3",
+      "WWMuIdV4",
+      "NoId",
+      "CustomId",
+      "MVAID_BDTG_IDIso"
     };
  
-    MuonTools::EMuIsoType MuIsoTypes[17] = {
+    std::vector<MuonTools::EMuIsoType> MuIsoTypes {
       MuonTools::kTrackCalo,                         
       MuonTools::kTrackCaloCombined,                 
       MuonTools::kTrackCaloSliding,                  
@@ -104,39 +105,45 @@ namespace mithep {
       MuonTools::kIsoDeltaR
     };
   
-    std::string MuIsoTypeNames[17] = {
-      "MuonIso_TrackCalo",                         
-      "MuonIso_TrackCaloCombined",                   
-      "MuonIso_TrackCaloSliding",                  
-      "MuonIso_TrackCaloSlidingNoCorrection",      
-      "MuonIso_CombinedRelativeConeAreaCorrected", 
-      "MuonIso_CombinedRelativeEffectiveAreaCorrected",
-      "MuonIso_CustomIso",                         
-      "MuonIso_PFIso",                             
-      "MuonIso_PFRadialIso",                       
-      "MuonIso_PFIsoBetaPUCorrected",              
-      "MuonIso_PFIsoBetaPUCorrectedTight",         
-      "MuonIso_PFIsoEffectiveAreaCorrected",       
-      "MuonIso_PFIsoNoL",                          
-      "MuonIso_NoIso",                             
-      "MuonIso_MVAIso_BDTG_IDIso",                 
-      "MuonIso_IsoRingsV0_BDTG_Iso",               
-      "MuonIso_IsoDeltaR"
+    std::vector<std::string> MuIsoTypeNames {
+      "TrackCalo",                         
+      "TrackCaloCombined",                   
+      "TrackCaloSliding",                  
+      "TrackCaloSlidingNoCorrection",      
+      "CombinedRelativeConeAreaCorrected", 
+      "CombinedRelativeEffectiveAreaCorrected",
+      "CustomIso",                         
+      "PFIso",                             
+      "PFRadialIso",                       
+      "PFIsoBetaPUCorrected",              
+      "PFIsoBetaPUCorrectedTight",         
+      "PFIsoEffectiveAreaCorrected",       
+      "PFIsoNoL",                          
+      "NoIso",                             
+      "MVAIso_BDTG_IDIso",                 
+      "IsoRingsV0_BDTG_Iso",               
+      "IsoDeltaR"
     };
 
-    unsigned int MuClassTypeBits[sizeof(MuClassTypes)/sizeof(UInt_t)];
-    unsigned int MuIdTypeBits[sizeof(MuIdTypes)/sizeof(UInt_t)];
-    unsigned int MuIsoTypeBits[sizeof(MuIsoTypes)/sizeof(UInt_t)];
-    unsigned int NClassTypes = sizeof(MuClassTypes)/sizeof(UInt_t);
-    unsigned int NIdTypes = sizeof(MuIdTypes)/sizeof(UInt_t);
-    unsigned int NIsoTypes = sizeof(MuIsoTypes)/sizeof(UInt_t);
+    //std::vector<std::array<Bool_t, sizeof(MuClassTypes)/sizeof(UInt_t) > > MuClassTypeBits;
+    //std::vector<std::array<Bool_t, sizeof(MuIdTypes)/sizeof(UInt_t) > >    MuIdTypeBits;
+    //std::vector<std::array<Bool_t, sizeof(MuIsoTypes)/sizeof(UInt_t) > >   MuIsoTypeBits;
+    vector< vector<bool> > MuClassTypeBits_;
+    vector< vector<bool> > MuIdTypeBits_;
+    vector< vector<bool> > MuIsoTypeBits_;
+    //Bool_t MuIdTypeBits[sizeof(MuIdTypes)/sizeof(UInt_t)];
+    //Bool_t MuIsoTypeBits[sizeof(MuIsoTypes)/sizeof(UInt_t)];
+    //unsigned int NClassTypes = sizeof(MuClassTypes)/sizeof(UInt_t);
+    //unsigned int NIdTypes = sizeof(MuIdTypes)/sizeof(UInt_t);
+    //unsigned int NIsoTypes = sizeof(MuIsoTypes)/sizeof(UInt_t);
+    unsigned int NClassTypes = MuClassTypes.size();
+    unsigned int NIdTypes    = MuIdTypes.size(); 
+    unsigned int NIsoTypes   = MuIsoTypes.size();
     
-    unsigned int runNum, lumiSec, evtNum;   // event ID
-    unsigned int npv;                       // number of primary vertices
-    unsigned int pass;                      // whether probe passes requirements
-    int          charge;              // tag, probe charge
-    float mass;
-    TLorentzVector *fourMomentum=0;        // tag, probe 4-vector
+    unsigned int runNum, lumiSec, evtNum; 
+    unsigned int npv;                     
+    std::vector<int> charge_;             
+    std::vector<TLorentzVector*> fourMomentum_;        // tag, probe 4-vector
     ClassDef(BitwiseMuonNtuples, 0)
   };
 

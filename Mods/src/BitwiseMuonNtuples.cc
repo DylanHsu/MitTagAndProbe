@@ -9,6 +9,11 @@
 #include <vector>
 #include <cstring>
 
+template class vector< vector<bool> >;
+//template class vector<string>;
+//template class vector<int>;
+template class vector<TLorentzVector*>;
+
 ClassImp(mithep::BitwiseMuonNtuples)
 
 mithep::BitwiseMuonNtuples::BitwiseMuonNtuples(char const* _name/* = "mithep::BitwiseMuonNtuples"*/, char const* _title/* = "Flat-tree ntuples producer"*/) :
@@ -42,51 +47,72 @@ mithep::BitwiseMuonNtuples::Process()
   
   for (unsigned iP(0); iP != allMuons->GetEntries(); ++iP) {  
     Muon const &muon(*allMuons->At(iP));
-    
+    vector<bool> MuClassTypeBits(NClassTypes); 
+    vector<bool> MuIdTypeBits(NIdTypes); 
+    vector<bool> MuIsoTypeBits(NIsoTypes); 
     // Set bits for Muon class types
     for(unsigned int iType=0; iType != NClassTypes; iType++) {
       MuonTools::EMuClassType MuonClassType = MuClassTypes[iType];
       if(MuonTools::PassClass(&muon, MuonTools::EMuClassType(MuonClassType))) {
-        MuClassTypeBits[iType]=1; 
+        MuClassTypeBits[iType]=true; 
       } else {
-        MuClassTypeBits[iType]=0; 
+        MuClassTypeBits[iType]=false; 
       }
     }
     // Set bits for Muon id types
     for(unsigned int iType=0; iType != NIdTypes; iType++) {
       MuonTools::EMuIdType MuonIdType = MuIdTypes[iType];
       if(MuonTools::PassId(&muon, MuonTools::EMuIdType(MuonIdType))) {
-        MuIdTypeBits[iType]=1; 
+        MuIdTypeBits[iType]=true; 
       } else {
-        MuIdTypeBits[iType]=0; 
+        MuIdTypeBits[iType]=false; 
       }
     }
     // Set bits for Muon isolation types
     for(unsigned int iType=0; iType != NIsoTypes; iType++) {
       MuonTools::EMuIsoType MuonIsoType = MuIsoTypes[iType];
       if(MuonTools::PassIso(&muon, MuonTools::EMuIsoType(MuonIsoType))) {
-        MuIsoTypeBits[iType]=1; 
+        MuIsoTypeBits[iType]=true; 
       } else {
-        MuIsoTypeBits[iType]=0; 
+        MuIsoTypeBits[iType]=false; 
       }
     }
-    charge = muon.Trk()->Charge();
-    fourMomentum=new TLorentzVector(
+    float charge = muon.Trk()->Charge();
+    TLorentzVector *fourMomentum=new TLorentzVector(
       muon.Px(),
       muon.Py(),
       muon.Pz(),
       muon.E()
     );
-    fNtuplesTree->Fill();
+    MuClassTypeBits_.push_back(MuClassTypeBits);
+    MuIdTypeBits_.push_back(MuIdTypeBits);
+    MuIsoTypeBits_.push_back(MuIsoTypeBits);
+    charge_.push_back(charge);
+    fourMomentum_.push_back(fourMomentum);
     
   }
+  fNtuplesTree->Fill();
+  MuClassTypeBits_.resize(0);
+  MuIdTypeBits_.resize(0);
+  MuIsoTypeBits_.resize(0);
+  charge_.resize(0);
+  fourMomentum_.resize(0);
 }
 
 void
 mithep::BitwiseMuonNtuples::SlaveBegin()
 {
-  fNtuplesTree = new TTree("Muons", "Big burlap sack o' muons.");
+  fPropertiesTree = new TTree("BitNames", "");
+  fPropertiesTree->Branch("ClassNames", "vector<string>", &MuClassTypeNames);
+  fPropertiesTree->Branch("IdNames",    "vector<string>", &MuIdTypeNames);
+  fPropertiesTree->Branch("IsoNames",   "vector<string>", &MuIsoTypeNames);
+  //fPropertiesTree->SetBranchAddress("muonClassNames", &MuClassTypeNames);
+  //fPropertiesTree->SetBranchAddress("muonIdNames",    &MuIdTypeNames);
+  //fPropertiesTree->SetBranchAddress("muonIsoNames",   &MuIsoTypeNames);
+  AddOutput(fPropertiesTree);
+  fPropertiesTree->Fill();
 
+  fNtuplesTree = new TTree("Events", "Big burlap sack o' muons.");
   // Event-level branches
   fNtuplesTree->Branch("runNum",   &runNum,   "runNum/i"   );  
   fNtuplesTree->Branch("lumiSec",  &lumiSec,  "lumiSec/i"  );  
@@ -98,28 +124,18 @@ mithep::BitwiseMuonNtuples::SlaveBegin()
   fNtuplesTree->SetBranchAddress("npv",      &npv);
   
   // Object-level branches
-  //fNtuplesTree->Branch("pass",     &pass,     "pass/i"     );  
-  fNtuplesTree->Branch("mass",     &mass,     "mass/F"     );  
-  fNtuplesTree->Branch("charge",     &charge,     "charge/I"     );  
-  fNtuplesTree->Branch("fourMomentum", "TLorentzVector", &fourMomentum );         
-  fNtuplesTree->SetBranchAddress("mass",     &mass);
-  fNtuplesTree->SetBranchAddress("charge",     &charge);
-  fNtuplesTree->SetBranchAddress("fourMomentum",     &fourMomentum);
-  for(unsigned int iType=0; iType != NClassTypes; iType++) {
-    std::string typeSpecifier= MuClassTypeNames[iType] + "/i";
-    fNtuplesTree->Branch(MuClassTypeNames[iType].c_str(), std::addressof(MuClassTypeBits[iType]), typeSpecifier.c_str());
-    fNtuplesTree->SetBranchAddress(MuClassTypeNames[iType].c_str(), std::addressof(MuClassTypeBits[iType]));
-  }
-  for(unsigned int iType=0; iType != NIdTypes; iType++) {
-    std::string typeSpecifier= MuIdTypeNames[iType] + "/i";
-    fNtuplesTree->Branch(MuIdTypeNames[iType].c_str(), std::addressof(MuIdTypeBits[iType]), typeSpecifier.c_str());
-    fNtuplesTree->SetBranchAddress(MuIdTypeNames[iType].c_str(), std::addressof(MuIdTypeBits[iType]));
-  }
-  for(unsigned int iType=0; iType != NIsoTypes; iType++) {
-    std::string typeSpecifier= MuIsoTypeNames[iType] + "/i";
-    fNtuplesTree->Branch(MuIsoTypeNames[iType].c_str(), std::addressof(MuIsoTypeBits[iType]), typeSpecifier.c_str());
-    fNtuplesTree->SetBranchAddress(MuIsoTypeNames[iType].c_str(), std::addressof(MuIsoTypeBits[iType]));
-  }
+  fNtuplesTree->Branch("charge", "vector<int>", &charge_);  
+  fNtuplesTree->Branch("fourMomentum", "vector<TLorentzVector*>", &fourMomentum_ );         
+  fNtuplesTree->Branch("ClassBits", "vector< vector<bool> >", &MuClassTypeBits_);
+  fNtuplesTree->Branch("IdBits", "vector< vector<bool> >", &MuIdTypeBits_);
+  fNtuplesTree->Branch("IsoBits", "vector< vector<bool> >", &MuIsoTypeBits_);
+  
+  //fNtuplesTree->SetBranchAddress("muonCharge",     &charge_);
+  //fNtuplesTree->SetBranchAddress("muon4Momentum",     &fourMomentum_);
+  //fNtuplesTree->SetBranchAddress("muonClassBits",  &MuClassTypeBits_);
+  //fNtuplesTree->SetBranchAddress("muonIdBits",   &MuIdTypeBits_);
+  //fNtuplesTree->SetBranchAddress("muonIsoBits", &MuIsoTypeBits_);
+  
   AddOutput(fNtuplesTree);
 }
 
