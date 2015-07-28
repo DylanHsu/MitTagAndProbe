@@ -16,7 +16,7 @@ analysis.SetProcessNEvents(10000)
 hltMod = mithep.HLTMod()
 hltMod.SetBitsName('HLTBits')
 hltMod.SetTrigObjsName('SingleElectronTriggerObjects')
-triggerlist = open('electron_triggers_2012.txt')
+triggerList = open('~/cms/cmssw/041/CMSSW_7_4_6/src/MitTagAndProbe/macros/electron_triggers_2012.txt')
 for line in triggerList:
     hltMod.AddTrigger(line.strip())
     
