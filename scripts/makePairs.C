@@ -19,8 +19,8 @@
 #endif
 
 void makePairs(
-  char* inputFile,
-  char* outputFile,
+  string inputFile,
+  string outputFile,
   string tagIdType    ="Pog2015_Tight",  // ID used for the tag
   string tagIsoType   ="PFIso",          // Iso used for the tag
   string probeIdType  ="Pog2015_Loose",  // ID used for selecting probes
@@ -32,7 +32,7 @@ void makePairs(
   bool debug=true;
   double deltaRthreshold=0.001;
 
-  TFile *inputFileHandler=TFile::Open(inputFile,"READ");
+  TFile *inputFileHandler=TFile::Open(inputFile.c_str(),"READ");
   //TFile *inputFileHandler = new TFile("/mnt/hscratch/dhsu/Zuu_13TeV_2015-07-22_bitwise.root");
   //if(inputFileHandler==0) {
   //    printf("Error opening input file \"%s\"\n",inputFile);
@@ -129,7 +129,7 @@ void makePairs(
   // TTreePlayer->SetBranchStatus("branchname",1);  // activate branchname
 
   // Output tree branch
-  TFile *outputFileHandler=TFile::Open(outputFile,"RECREATE");
+  TFile *outputFileHandler=TFile::Open(outputFile.c_str(),"RECREATE");
   outputFileHandler->SetCompressionLevel(9);
   TTree *pairTree = new TTree("Events", "");
   unsigned int pass;                      // whether probe passes requirements
@@ -207,7 +207,9 @@ void makePairs(
         );  
         qtag = (*vectorCharge)[j]; 
         qprobe = (*vectorCharge)[k];
+        if(qtag+qprobe!=0) continue;
         TLorentzVector pairSystemTLV = *probeTLV + *tagTLV;
+        if(pairSystemTLV.Pt() <= 200) continue;
         mass = pairSystemTLV.M();
         pairTree->Fill(); 
         k++; 
