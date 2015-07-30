@@ -21,17 +21,19 @@
 void makePairs(
   char* inputFile,
   char* outputFile,
-  string tagIdType    ="Tight",
-  string tagIsoType   ="NoIso",
-  string probeIdType  ="Loose",
-  string probeIsoType ="NoIso"
+  string tagIdType    ="Pog2015_Tight",  // ID used for the tag
+  string tagIsoType   ="PFIso",          // Iso used for the tag
+  string probeIdType  ="Pog2015_Loose",  // ID used for selecting probes
+  string probeIsoType ="PFIso",          // Iso used for selecting probes
+  string passIdType   ="Pog2015_Tight",  // ID used to determine whether probe passes or fails the cut
+  string passIsoType  ="PFIso"           // Iso used to determine whether probe passes or fails the cut
 ) {
 //void makePairs() {
   bool debug=true;
   double deltaRthreshold=0.001;
 
-  //TFile *inputFileHandler=TFile::Open(inputFile,"READ");
-  TFile *inputFileHandler = new TFile("/mnt/hscratch/dhsu/Zuu_13TeV_2015-07-22_bitwise.root");
+  TFile *inputFileHandler=TFile::Open(inputFile,"READ");
+  //TFile *inputFileHandler = new TFile("/mnt/hscratch/dhsu/Zuu_13TeV_2015-07-22_bitwise.root");
   //if(inputFileHandler==0) {
   //    printf("Error opening input file \"%s\"\n",inputFile);
   //    return;                                                
@@ -52,8 +54,8 @@ void makePairs(
 
   // Loop over bit names to find the Id and Iso bits we want
   // Throw an error if not found
-  int tagIdKey=-1, tagIsoKey=-1, probeIdKey=-1, probeIsoKey=-1;
-  unsigned int indexId=0, indexIso=0;
+  int tagIdKey=-1, tagIsoKey=-1, probeIdKey=-1, probeIsoKey=-1, passIdKey=-1, passIsoKey=-1;
+  unsigned int indexId=0, indexIso=0, indexPass=0;
   for(std::vector<string>::iterator it = vectorIdNames->begin(); it!=vectorIdNames->end(); ++it) {
     if(debug) printf("Checking %s Id\n",(*it).c_str());
     
@@ -65,11 +67,15 @@ void makePairs(
       printf("Found probeIdType \"%s\" in bit names, key is %d\n", probeIdType.c_str(), indexId);
       probeIdKey=indexId;
     }
-    if(tagIdKey > 0 && probeIdKey > 0) break;
+    if(*it == passIdType) {
+      printf("Found passIdType \"%s\" in bit names, key is %d\n", passIdType.c_str(), indexId);
+      passIdKey=indexId;
+    }
+    if(tagIdKey > 0 && probeIdKey > 0 && passIdKey > 0) break;
     indexId++;
   }
-  if(tagIdKey<0 || probeIdKey<0) {
-    printf("Could not find IdTypes \"%s\", \"%s\" in bit names, exiting", tagIdType.c_str(), probeIdType.c_str());
+  if(tagIdKey<0 || probeIdKey<0 || passIdKey<0) {
+    printf("Could not find IdTypes \"%s\", \"%s\", \"%s\" in bit names, exiting", tagIdType.c_str(), probeIdType.c_str(), passIdType.c_str());
     return;
   } 
   for(std::vector<string>::iterator it = vectorIsoNames->begin(); it!=vectorIsoNames->end(); ++it) {
@@ -83,11 +89,15 @@ void makePairs(
       printf("Found probeIsoType \"%s\" in bit names, key is %d\n", probeIsoType.c_str(), indexIso);
       probeIsoKey=indexIso;
     }
-    if(tagIsoKey > 0 && probeIsoKey > 0) break;
+    if(*it == passIsoType) {
+      printf("Found passIsoType \"%s\" in bit names, key is %d\n", passIsoType.c_str(), indexIso);
+      passIsoKey=indexIso;
+    }
+    if(tagIsoKey > 0 && probeIsoKey > 0 && passIsoKey > 0) break;
     indexIso++;
   }
-  if(tagIsoKey<0 || probeIsoKey<0) {
-    printf("Could not find IsoTypes \"%s\", \"%s\" in bit names, exiting", tagIsoType.c_str(), probeIsoType.c_str());
+  if(tagIsoKey<0 || probeIsoKey<0 || passIsoKey<0) {
+    printf("Could not find IsoTypes \"%s\", \"%s\", \"%s\" in bit names, exiting", tagIsoType.c_str(), probeIsoType.c_str(), passIsoType.c_str());
     return;
   }
 
@@ -119,9 +129,9 @@ void makePairs(
   // TTreePlayer->SetBranchStatus("branchname",1);  // activate branchname
 
   // Output tree branch
-  TFile *outputFileHandler=TFile::Open("/tmp/dhsu/outputPairNtuple.root","RECREATE");
-  //outputFileHandler->SetCompressionLevel(9);
-  TTree *pairTree = new TTree("Events", "Tag and probe events with 2 muons for Kevin's script");
+  TFile *outputFileHandler=TFile::Open(outputFile,"RECREATE");
+  outputFileHandler->SetCompressionLevel(9);
+  TTree *pairTree = new TTree("Events", "");
   unsigned int pass;                      // whether probe passes requirements
   float        npu=0;                       // mean number of expected pileup
   float        scale1fb=1;                  // event weight per 1/fb
@@ -154,7 +164,6 @@ void makePairs(
   pairTree->SetBranchAddress("tag",      &tagTLV);
   pairTree->SetBranchAddress("probe",    &probeTLV);
  
-
   // Data Bookkeeping
   Long64_t nentries = eventsTree->GetEntries();
   Long64_t nbytes = 0;
@@ -180,8 +189,10 @@ void makePairs(
         if(deltaR < deltaRthreshold) continue;
         
         // check Id and Iso for the probe candidate
+        if( (*vectorIdBits)[j][probeIdKey] && (*vectorIsoBits)[j][probeIsoKey])  continue;
+        // 
         pass=0;
-        if( (*vectorIdBits)[j][probeIdKey] && (*vectorIsoBits)[j][probeIsoKey])  pass=1;
+        if( (*vectorIdBits)[j][passIdKey] && (*vectorIsoBits)[j][passIsoKey])  pass=1;
         tagTLV=new TLorentzVector(
           (*itTag)->Px(),
           (*itTag)->Py(),
@@ -198,11 +209,6 @@ void makePairs(
         qprobe = (*vectorCharge)[k];
         TLorentzVector pairSystemTLV = *probeTLV + *tagTLV;
         mass = pairSystemTLV.M();
-         
-        //TLorentzVector *fourMomentum = *it;
-        //printf("item has energy %f and charge %d\n", (*it)->E(), (*vectorCharge)[j]);
-        //printf("Id = %s, Iso = %s\n", (*vectorIdBits)[j][keyId] ? "true" : "false", (*vectorIsoBits)[j][keyIso] ? "true" : "false");
-        
         pairTree->Fill(); 
         k++; 
       }
