@@ -16,7 +16,7 @@ analysis.SetProcessNEvents(10000)
 hltMod = mithep.HLTMod()
 hltMod.SetBitsName('HLTBits')
 hltMod.SetTrigObjsName('SingleElectronTriggerObjects')
-triggerList = open('~/cms/cmssw/041/CMSSW_7_4_6/src/MitTagAndProbe/macros/electron_triggers_2012.txt')
+triggerList = open('/home/dhsu/cms/cmssw/041/CMSSW_7_4_6/src/MitTagAndProbe/macros/electron_triggers_2015.txt')
 for line in triggerList:
     hltMod.AddTrigger(line.strip())
     
@@ -64,8 +64,7 @@ ntuplesMod.SetTriggerObjectsName('SingleElectronTriggerObjects')
 analysis.AddSuperModule(hltMod)
 hltMod.Add(goodPVMod)
 goodPVMod.Add(pfPUMod)
-pfPUMod.add(tagElectronIdMod)
-tagElectronIdMod.Add(probeElectronIdMod)
+pfPUMod.Add(tagElectronIdMod)
 probeElectronIdMod.Add(ntuplesMod)
 
 analysis.Run(False)
