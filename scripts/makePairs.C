@@ -60,7 +60,7 @@ void makePairs(
     if(debug) printf("Checking %s Id\n",(*it).c_str());
     
     if(*it == tagIdType) {
-      printf("Found tagIdType \"%s\" in bit names, key is %d\n", probeIdType.c_str(), indexId);
+      printf("Found tagIdType \"%s\" in bit names, key is %d\n", tagIdType.c_str(), indexId);
       tagIdKey=indexId;
     }
     if(*it == probeIdType) {
@@ -82,7 +82,7 @@ void makePairs(
     if(debug) printf("Checking %s Iso\n",(*it).c_str());
     
     if(*it == tagIsoType) {
-      printf("Found tagIsoType \"%s\" in bit names, key is %d\n", probeIsoType.c_str(), indexIso);
+      printf("Found tagIsoType \"%s\" in bit names, key is %d\n", tagIsoType.c_str(), indexIso);
       tagIsoKey=indexIso;
     }
     if(*it == probeIsoType) {
@@ -172,27 +172,101 @@ void makePairs(
   for (Long64_t i=0; i<nentries;i++) {
   //for (Long64_t i=0; i<5;i++) {
     nbytes += eventsTree->GetEntry(i);
-
+    // klugey implementation of golden runs list
+    bool isGoodRun=false;
+    switch(runNum) {    
+      case 251244:
+        if(
+          lumiSec >= 85 && lumiSec <= 86 ||
+          lumiSec >= 88 && lumiSec <= 93 ||
+          lumiSec >= 96 && lumiSec <= 121 ||
+          lumiSec >= 123 && lumiSec <= 156 ||
+          lumiSec >= 158 && lumiSec <= 428 ||
+          lumiSec >= 430 && lumiSec <= 442
+        ) isGoodRun=true;
+        break;
+      case 251251: 
+        if(
+          lumiSec >= 1 && lumiSec <= 31 ||
+          lumiSec >= 33 && lumiSec <= 97 ||
+          lumiSec >= 99 && lumiSec <= 167
+        ) isGoodRun=true;
+        break;
+      case 251252: 
+        if(
+          lumiSec >= 1 && lumiSec <= 283 ||
+          lumiSec >= 285 && lumiSec <= 505 ||
+          lumiSec >= 507 && lumiSec <= 554
+        ) isGoodRun=true;
+        break;
+      case 251561: 
+        if(
+          lumiSec >= 1 && lumiSec <= 94
+        ) isGoodRun=true;
+        break;
+      case 251562: 
+        if(
+          lumiSec >= 1 && lumiSec <= 439 ||
+          lumiSec >= 443 && lumiSec <= 691
+        ) isGoodRun=true;
+        break;
+      case 251643: 
+        if(
+          lumiSec >= 1 && lumiSec <= 216 ||
+          lumiSec >= 222 && lumiSec <= 606
+        ) isGoodRun=true;
+        break;
+      case 251721: 
+        if(
+          lumiSec >= 21 && lumiSec <= 36
+        ) isGoodRun=true;
+        break;
+      case 251883: 
+        if(
+          lumiSec >= 56 && lumiSec <= 56 ||
+          lumiSec >= 58 && lumiSec <= 60 ||
+          lumiSec >= 62 && lumiSec <= 144 ||
+          lumiSec >= 156 && lumiSec <= 437
+        ) isGoodRun=true;
+        break;
+      default:
+        break;
+    }
+    if(!isGoodRun) continue;
+ 
     unsigned int j=0; // index for tags
     for(std::vector<TLorentzVector*>::iterator itTag = vectorFourMomentum->begin(); itTag!=vectorFourMomentum->end(); ++itTag) {
 
       // check Id and Iso for the tag candidate
-      if(!( (*vectorIdBits)[j][tagIdKey] && (*vectorIsoBits)[j][tagIsoKey]) ) continue;      
+      if(!( (*vectorIdBits)[j][tagIdKey] && (*vectorIsoBits)[j][tagIsoKey]) ) {
+        //printf("failed cuts on tag\n");
+        continue;      
+      }
       
       unsigned int k=0; // index for probes
       for(std::vector<TLorentzVector*>::iterator itProbe = vectorFourMomentum->begin(); itProbe!=vectorFourMomentum->end(); ++itProbe) {
+        //printf("Looking at pair, tag pT = %f, probe candidate pT = %f\n", (*itTag)->Pt(), (*itProbe)->Pt());
         // compute delta-R to see if the tag and probe are the same particle
         double deltaR = sqrt( 
           pow((*itTag)->Eta() - (*itProbe)->Eta(), 2) +
           pow((*itTag)->Phi() - (*itProbe)->Phi(), 2)
         );
-        if(deltaR < deltaRthreshold) continue;
+        if(deltaR < deltaRthreshold) {
+          //printf("delta R cut\n");
+          continue;
+        }
         
         // check Id and Iso for the probe candidate
-        if( (*vectorIdBits)[j][probeIdKey] && (*vectorIsoBits)[j][probeIsoKey])  continue;
+        if(!( (*vectorIdBits)[j][probeIdKey] && (*vectorIsoBits)[j][probeIsoKey]) ) {
+          //printf("failed probe requirements\n");
+          continue;
+        }
         // 
         pass=0;
-        if( (*vectorIdBits)[j][passIdKey] && (*vectorIsoBits)[j][passIsoKey])  pass=1;
+        if( (*vectorIdBits)[j][passIdKey] && (*vectorIsoBits)[j][passIsoKey]) {
+          pass=1;
+          //printf("probe passed tag!\n");
+        }
         tagTLV=new TLorentzVector(
           (*itTag)->Px(),
           (*itTag)->Py(),
@@ -207,9 +281,15 @@ void makePairs(
         );  
         qtag = (*vectorCharge)[j]; 
         qprobe = (*vectorCharge)[k];
-        if(qtag+qprobe!=0) continue;
+        if(qtag+qprobe!=0) {
+          //printf("total charge is nonzero (%d), continuing\n",qtag+qprobe);
+          continue;
+        }
         TLorentzVector pairSystemTLV = *probeTLV + *tagTLV;
-        if(pairSystemTLV.Pt() <= 200) continue;
+        if(pairSystemTLV.Pt() <= 200) {
+          //printf(" system pT is too low (%f GeV), continuing\n", pairSystemTLV.Pt());
+          continue;
+        }
         mass = pairSystemTLV.M();
         pairTree->Fill(); 
         k++; 
@@ -220,7 +300,7 @@ void makePairs(
   printf("Input tree has %lld entries using %lld bytes\n", nentries,nbytes);
   printf("Trying to write to file\n");
   pairTree->Write();
-  printf("Wrote to file\n");
+  printf("Wrote %lld entries to file\n", pairTree->GetEntries());
   outputFileHandler->Close();
   inputFileHandler->Close();
 }
