@@ -8,9 +8,12 @@
 void sameSign(string leptonTeVPt, Double_t ptMin, Double_t ptMax, string inputFile)
 {
 
-  string sameSignFilename = "/tmp/gteix/" + leptonTeVPt + "SameSignPairNtuple.root";
-  string oppositeSignFilename = "/tmp/gteix/" + leptonTeVPt + "OppositeSignPairNtuple.root";
-  string allLeptonFilename = "/tmp/gteix/" + leptonTeVPt + "AllPairNtuple.root";
+  string sameSignFilename = leptonTeVPt + "SameSignPairNtuple.root";
+  string oppositeSignFilename = leptonTeVPt + "OppositeSignPairNtuple.root";
+  string allLeptonFilename = leptonTeVPt + "AllPairNtuple.root";
+  //string sameSignFilename = "/tmp/gteix/" + leptonTeVPt + "SameSignPairNtuple.root";
+  //string oppositeSignFilename = "/tmp/gteix/" + leptonTeVPt + "OppositeSignPairNtuple.root";
+  //string allLeptonFilename = "/tmp/gteix/" + leptonTeVPt + "AllPairNtuple.root";
 
   TFile *f = TFile::Open(inputFile.c_str());
   TTree *tree = (TTree*)f->Get("Events");
@@ -132,7 +135,7 @@ void sameSign(string leptonTeVPt, Double_t ptMin, Double_t ptMax, string inputFi
   for (Long64_t i=0; i<nentries; i++) {
     tree->GetEntry(i);
     TLorentzVector pairSystemTLV = *probeTLV + *tagTLV;
-    if (ptMin < pairSystemTLV.Pt() < ptMax) {
+    if (ptMin < pairSystemTLV.Pt() && pairSystemTLV.Pt() < ptMax) {
       allLeptonTree->Fill();
       if (qtag+qprobe!=0) {
         sameSignLeptonTree->Fill();
