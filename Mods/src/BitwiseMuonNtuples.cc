@@ -3,6 +3,7 @@
 #include "MitAna/DataTree/interface/Vertex.h"
 #include "MitAna/DataTree/interface/Names.h"
 #include "MitPhysics/Utils/interface/MuonTools.h"
+#include "MitPhysics/Mods/interface/MuonIdMod.h"
 
 #include "TVector2.h"
 #include "TLorentzVector.h"
@@ -20,10 +21,23 @@ mithep::BitwiseMuonNtuples::BitwiseMuonNtuples(char const* _name/* = "mithep::Bi
   BaseMod(_name, _title),
   fAllMuonsName(Names::gkMuonBrn),
   fTriggerObjectsName(mithep::Names::gkHltObjBrn),
-  fPVName(Names::gkPVBeamSpotBrn),
-  MuClassTypes {
-  }
+  fPVName(Names::gkPVBeamSpotBrn)
 {
+}
+
+void
+mithep::BitwiseMuonNtuples::AddIdFlag(std::string name, mithep::MuonTools::EMuIdType IdType)
+{
+  MuIdTypeNames.push_back(name);
+  MuIdTypes.push_back(IdType);
+  NIdTypes++;
+}
+void
+mithep::BitwiseMuonNtuples::AddIsoFlag(std::string name, mithep::MuonTools::EMuIsoType IsoType)
+{
+  MuIsoTypeNames.push_back(name);
+  MuIsoTypes.push_back(IsoType);
+  NIsoTypes++;
 }
 
 void
@@ -42,40 +56,48 @@ mithep::BitwiseMuonNtuples::Process()
   evtNum = GetEventHeader()->EvtNum();
   runNum = GetEventHeader()->RunNum();
   lumiSec = GetEventHeader()->LumiSec();
-
-  // Set Object-level variables 
   
+  // Array of NFArrBool with flags from object published by MuonIdMod
+  mithep::NFArrBool *IdFlags[NIdTypes];
+  mithep::NFArrBool *IsoFlags[NIsoTypes];
+  // Now get the published objects and fill these arrays
+  for(unsigned int iType=0; iType != NIdTypes; iType++) {
+    IdFlags[iType] = GetObject<mithep::NFArrBool>(MuIdTypeNames[iType].c_str());
+//    printf("%d entries in IdFlags\n",IdFlags[iType]->GetEntries());
+  }
+  for(unsigned int iType=0; iType != NIsoTypes; iType++) {
+    IsoFlags[iType] = GetObject<mithep::NFArrBool>(MuIsoTypeNames[iType].c_str());
+//    printf("%d entries in IsoFlags\n",IsoFlags[iType]->GetEntries());
+  }
+  
+  // Set Object-level variables 
   for (unsigned iP(0); iP != allMuons->GetEntries(); ++iP) {  
     Muon const &muon(*allMuons->At(iP));
-    vector<bool> MuClassTypeBits(NClassTypes); 
     vector<bool> MuIdTypeBits(NIdTypes); 
     vector<bool> MuIsoTypeBits(NIsoTypes); 
-    // Set bits for Muon class types
-    for(unsigned int iType=0; iType != NClassTypes; iType++) {
-      MuonTools::EMuClassType MuonClassType = MuClassTypes[iType];
-      if(MuonTools::PassClass(&muon, MuonTools::EMuClassType(MuonClassType))) {
-        MuClassTypeBits[iType]=true; 
-      } else {
-        MuClassTypeBits[iType]=false; 
-      }
-    }
     // Set bits for Muon id types
     for(unsigned int iType=0; iType != NIdTypes; iType++) {
-      MuonTools::EMuIdType MuonIdType = MuIdTypes[iType];
-      if(MuonTools::PassId(&muon, MuonTools::EMuIdType(MuonIdType))) {
-        MuIdTypeBits[iType]=true; 
-      } else {
-        MuIdTypeBits[iType]=false; 
-      }
+      //MuonTools::EMuIdType MuonIdType = MuIdTypes[iType];
+      //if(MuonTools::PassId(&muon, MuonTools::EMuIdType(MuonIdType))) {
+      //  MuIdTypeBits[iType]=true; 
+      //} else {
+      //  MuIdTypeBits[iType]=false; 
+      //
+      //printf("reading IdFlags at iP=%d\n",iP);
+      MuIdTypeBits[iType] = IdFlags[iType]->At(iP);
+      if(MuIdTypeBits[iType]) fIdHisto->Fill(MuIdTypeNames[iType].c_str(), 1);
     }
     // Set bits for Muon isolation types
     for(unsigned int iType=0; iType != NIsoTypes; iType++) {
-      MuonTools::EMuIsoType MuonIsoType = MuIsoTypes[iType];
-      if(MuonTools::PassIso(&muon, MuonTools::EMuIsoType(MuonIsoType))) {
-        MuIsoTypeBits[iType]=true; 
-      } else {
-        MuIsoTypeBits[iType]=false; 
-      }
+      //MuonTools::EMuIsoType MuonIsoType = MuIsoTypes[iType];
+      //if(MuonTools::PassIso(&muon, MuonTools::EMuIsoType(MuonIsoType))) {
+      //  MuIsoTypeBits[iType]=true; 
+      //} else {
+      //  MuIsoTypeBits[iType]=false; 
+      //}
+      //printf("reading IsoFlags at iP=%d\n",iP);
+      MuIsoTypeBits[iType] = IsoFlags[iType]->At(iP);
+      if(MuIsoTypeBits[iType]) fIsoHisto->Fill(MuIsoTypeNames[iType].c_str(), 1);
     }
     float charge = muon.Trk()->Charge();
     TLorentzVector *fourMomentum=new TLorentzVector(
@@ -84,7 +106,6 @@ mithep::BitwiseMuonNtuples::Process()
       muon.Pz(),
       muon.E()
     );
-    MuClassTypeBits_.push_back(MuClassTypeBits);
     MuIdTypeBits_.push_back(MuIdTypeBits);
     MuIsoTypeBits_.push_back(MuIsoTypeBits);
     charge_.push_back(charge);
@@ -92,7 +113,6 @@ mithep::BitwiseMuonNtuples::Process()
     
   }
   fNtuplesTree->Fill();
-  MuClassTypeBits_.resize(0);
   MuIdTypeBits_.resize(0);
   MuIsoTypeBits_.resize(0);
   charge_.resize(0);
@@ -103,12 +123,8 @@ void
 mithep::BitwiseMuonNtuples::SlaveBegin()
 {
   fPropertiesTree = new TTree("BitNames", "");
-  fPropertiesTree->Branch("ClassNames", "vector<string>", &MuClassTypeNames);
   fPropertiesTree->Branch("IdNames",    "vector<string>", &MuIdTypeNames);
   fPropertiesTree->Branch("IsoNames",   "vector<string>", &MuIsoTypeNames);
-  //fPropertiesTree->SetBranchAddress("muonClassNames", &MuClassTypeNames);
-  //fPropertiesTree->SetBranchAddress("muonIdNames",    &MuIdTypeNames);
-  //fPropertiesTree->SetBranchAddress("muonIsoNames",   &MuIsoTypeNames);
   AddOutput(fPropertiesTree);
   fPropertiesTree->Fill();
 
@@ -126,17 +142,15 @@ mithep::BitwiseMuonNtuples::SlaveBegin()
   // Object-level branches
   fNtuplesTree->Branch("charge", "vector<int>", &charge_);  
   fNtuplesTree->Branch("fourMomentum", "vector<TLorentzVector*>", &fourMomentum_ );         
-  fNtuplesTree->Branch("ClassBits", "vector< vector<bool> >", &MuClassTypeBits_);
   fNtuplesTree->Branch("IdBits", "vector< vector<bool> >", &MuIdTypeBits_);
   fNtuplesTree->Branch("IsoBits", "vector< vector<bool> >", &MuIsoTypeBits_);
-  
-  //fNtuplesTree->SetBranchAddress("muonCharge",     &charge_);
-  //fNtuplesTree->SetBranchAddress("muon4Momentum",     &fourMomentum_);
-  //fNtuplesTree->SetBranchAddress("muonClassBits",  &MuClassTypeBits_);
-  //fNtuplesTree->SetBranchAddress("muonIdBits",   &MuIdTypeBits_);
-  //fNtuplesTree->SetBranchAddress("muonIsoBits", &MuIsoTypeBits_);
-  
+ 
+  //histo outputs
+  fIdHisto = new TH1F("Counts by Id","", 1, 0, 1);
+  fIsoHisto= new TH1F("Counts by Iso","", 1, 0, 1);
   AddOutput(fNtuplesTree);
+  AddOutput(fIdHisto);
+  AddOutput(fIsoHisto);
 }
 
 void
