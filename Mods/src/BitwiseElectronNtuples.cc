@@ -10,8 +10,6 @@
 #include <cstring>
 
 template class vector< vector<bool> >;
-//template class vector<string>;
-//template class vector<int>;
 template class vector<TLorentzVector*>;
 
 ClassImp(mithep::BitwiseElectronNtuples)
@@ -20,8 +18,23 @@ mithep::BitwiseElectronNtuples::BitwiseElectronNtuples(char const* _name/* = "mi
   BaseMod(_name, _title),
   fAllElectronsName(Names::gkElectronBrn),
   fTriggerObjectsName(mithep::Names::gkHltObjBrn),
-  fPVName(Names::gkPVBeamSpotBrn),
+  fPVName(Names::gkPVBeamSpotBrn)
 {
+}
+
+void
+mithep::BitwiseElectronNtuples::AddIdFlag(std::string name, mithep::ElectronTools::EElIdType IdType)
+{
+  ElIdTypeNames.push_back(name);
+  ElIdTypes.push_back(IdType);
+  NIdTypes++;
+}
+void
+mithep::BitwiseElectronNtuples::AddIsoFlag(std::string name, mithep::ElectronTools::EElIsoType IsoType)
+{
+  ElIsoTypeNames.push_back(name);
+  ElIsoTypes.push_back(IsoType);
+  NIsoTypes++;
 }
 
 void
@@ -40,46 +53,39 @@ mithep::BitwiseElectronNtuples::Process()
   evtNum = GetEventHeader()->EvtNum();
   runNum = GetEventHeader()->RunNum();
   lumiSec = GetEventHeader()->LumiSec();
-
-  // Set Object-level variables 
   
+  // Arrays of NFArrBool with flags from object published by ElectronIdMod
+  mithep::NFArrBool *IdFlags[NIdTypes];
+  mithep::NFArrBool *IsoFlags[NIsoTypes];
+  // Now get the published objects and fill these arrays
+  for(unsigned int iType=0; iType != NIdTypes; iType++) {
+    IdFlags[iType] = GetObject<mithep::NFArrBool>(ElIdTypeNames[iType].c_str());
+  }
+  for(unsigned int iType=0; iType != NIsoTypes; iType++) {
+    IsoFlags[iType] = GetObject<mithep::NFArrBool>(ElIsoTypeNames[iType].c_str());
+  }
+  
+  // Set Object-level variables 
   for (unsigned iP(0); iP != allElectrons->GetEntries(); ++iP) {  
     Electron const &electron(*allElectrons->At(iP));
     vector<bool> ElIdTypeBits(NIdTypes); 
     vector<bool> ElIsoTypeBits(NIsoTypes); 
-    // Set bits for Muon class types
-    //for(unsigned int iType=0; iType != NClassTypes; iType++) {
-    //  MuonTools::EMuClassType MuonClassType = MuClassTypes[iType];
-    //  if(MuonTools::PassClass(&muon, MuonTools::EMuClassType(MuonClassType))) {
-    //    MuClassTypeBits[iType]=true; 
-    //  } else {
-    //    MuClassTypeBits[iType]=false; 
-    //  }
-    //}
     // Set bits for Electron id types
     for(unsigned int iType=0; iType != NIdTypes; iType++) {
-      ElectronTools::EElIdType ElectronIdType = ElIdTypes[iType];
-      if(ElectronTools::PassId(&electron, ElectronTools::EElIdType(ElectronIdType))) {
-        ElIdTypeBits[iType]=true; 
-      } else {
-        ElIdTypeBits[iType]=false; 
-      }
+      ElIdTypeBits[iType] = IdFlags[iType]->At(iP);
+      if(ElIdTypeBits[iType]) fIdHisto->Fill(ElIdTypeNames[iType].c_str(), 1);
     }
     // Set bits for Electron isolation types
     for(unsigned int iType=0; iType != NIsoTypes; iType++) {
-      ElectronTools::EElIsoType ElectronIsoType = ElIsoTypes[iType];
-      if(ElectronTools::PassIso(&electron, ElectronTools::EElIsoType(ElectronIsoType))) {
-        ElIsoTypeBits[iType]=true; 
-      } else {
-        ElIsoTypeBits[iType]=false; 
-      }
+      ElIsoTypeBits[iType] = IsoFlags[iType]->At(iP);
+      if(ElIsoTypeBits[iType]) fIsoHisto->Fill(ElIsoTypeNames[iType].c_str(), 1);
     }
     float charge = electron.Trk()->Charge();
     TLorentzVector *fourMomentum=new TLorentzVector(
-      Electron.Px(),
-      Electron.Py(),
-      Electron.Pz(),
-      Electron.E()
+      electron.Px(),
+      electron.Py(),
+      electron.Pz(),
+      electron.E()
     );
     ElIdTypeBits_.push_back(ElIdTypeBits);
     ElIsoTypeBits_.push_back(ElIsoTypeBits);
@@ -88,7 +94,6 @@ mithep::BitwiseElectronNtuples::Process()
     
   }
   fNtuplesTree->Fill();
-  ElClassTypeBits_.resize(0);
   ElIdTypeBits_.resize(0);
   ElIsoTypeBits_.resize(0);
   charge_.resize(0);
@@ -101,13 +106,10 @@ mithep::BitwiseElectronNtuples::SlaveBegin()
   fPropertiesTree = new TTree("BitNames", "");
   fPropertiesTree->Branch("IdNames",    "vector<string>", &ElIdTypeNames);
   fPropertiesTree->Branch("IsoNames",   "vector<string>", &ElIsoTypeNames);
-  //fPropertiesTree->SetBranchAddress("muonClassNames", &MuClassTypeNames);
-  //fPropertiesTree->SetBranchAddress("muonIdNames",    &MuIdTypeNames);
-  //fPropertiesTree->SetBranchAddress("muonIsoNames",   &MuIsoTypeNames);
   AddOutput(fPropertiesTree);
   fPropertiesTree->Fill();
 
-  fNtuplesTree = new TTree("Events", "Big burlap sack o' muons.");
+  fNtuplesTree = new TTree("Events", "Big burlap sack o' electrons.");
   // Event-level branches
   fNtuplesTree->Branch("runNum",   &runNum,   "runNum/i"   );  
   fNtuplesTree->Branch("lumiSec",  &lumiSec,  "lumiSec/i"  );  
@@ -123,14 +125,13 @@ mithep::BitwiseElectronNtuples::SlaveBegin()
   fNtuplesTree->Branch("fourMomentum", "vector<TLorentzVector*>", &fourMomentum_ );         
   fNtuplesTree->Branch("IdBits", "vector< vector<bool> >", &ElIdTypeBits_);
   fNtuplesTree->Branch("IsoBits", "vector< vector<bool> >", &ElIsoTypeBits_);
-  
-  //fNtuplesTree->SetBranchAddress("muonCharge",     &charge_);
-  //fNtuplesTree->SetBranchAddress("muon4Momentum",     &fourMomentum_);
-  //fNtuplesTree->SetBranchAddress("muonClassBits",  &MuClassTypeBits_);
-  //fNtuplesTree->SetBranchAddress("muonIdBits",   &MuIdTypeBits_);
-  //fNtuplesTree->SetBranchAddress("muonIsoBits", &MuIsoTypeBits_);
-  
+ 
+  //histo outputs
+  fIdHisto = new TH1F("Counts by Id","", 1, 0, 1);
+  fIsoHisto= new TH1F("Counts by Iso","", 1, 0, 1);
   AddOutput(fNtuplesTree);
+  AddOutput(fIdHisto);
+  AddOutput(fIsoHisto);
 }
 
 void
