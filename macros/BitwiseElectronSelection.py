@@ -8,8 +8,8 @@ Mods=[]
 
 hltMod = mithep.HLTMod()
 hltMod.SetBitsName('HLTBits')
-hltMod.SetTrigObjsName('SingleMuonTriggerObjects')
-hltMod.AddTrigger('HLT_IsoMu20_v*')
+hltMod.SetTrigObjsName('SingleElectronTriggerObjects')
+hltMod.AddTrigger('HLT_Ele23_WPLoose_Gsf_v*')
 Mods.append(hltMod)
 
 goodPVMod = mithep.GoodPVFilterMod()
@@ -27,80 +27,103 @@ pfPUMod.SetPFPileUpName('pfPU')
 Mods.append(pfPUMod)
 
 IdAlgos=[
-  ("Mit2012_WMuId",           mithep.MuonTools.kMit2012_WMuId),
-  ("Mit2012_ZMuId",           mithep.MuonTools.kMit2012_ZMuId),
-  ("Mit2012_Tight",           mithep.MuonTools.kMit2012_Tight),
-  ("Pog2012_CutBasedIDTight", mithep.MuonTools.kPog2012_CutBasedIdTight),
-  ("Mit2012_Loose",           mithep.MuonTools.kMit2012_Loose),
-  ("Mit2012_WWMuIdV1",        mithep.MuonTools.kMit2012_WWMuIdV1),
-  ("Mit2012_WWMuIdV2",        mithep.MuonTools.kMit2012_WWMuIdV2),      
-  ("Mit2012_WWMuIdV3",        mithep.MuonTools.kMit2012_WWMuIdV3),      
-  ("Mit2012_WWMuIdV4",        mithep.MuonTools.kMit2012_WWMuIdV4),      
-  ("Pog2015_Loose" ,          mithep.MuonTools.kPog2015_Loose),      
-  ("Pog2015_Medium",          mithep.MuonTools.kPog2015_Medium),         
-  ("Pog2015_Tight",           mithep.MuonTools.kPog2015_Tight),        
-  ("NoId",                    mithep.MuonTools.kNoId),  
-  ("MVAID_BDTG_IDIso",        mithep.MuonTools.kMVAID_BDTG_IDIso)
+  ("Tight",                                 mithep.ElectronTools.kTight),             
+  ("Loose",                                 mithep.ElectronTools.kLoose),             
+  #("Likelihood",                            mithep.ElectronTools.kLikelihood),        
+  ("NoId",                                  mithep.ElectronTools.kNoId),              
+  ("ZeeId",                                 mithep.ElectronTools.kZeeId),             
+  ("VBTFWorkingPointFakeableId",            mithep.ElectronTools.kVBTFWorkingPointFakeableId),
+  ("VBTFWorkingPoint95Id",                  mithep.ElectronTools.kVBTFWorkingPoint95Id),
+  ("VBTFWorkingPoint90Id",                  mithep.ElectronTools.kVBTFWorkingPoint90Id),
+  ("VBTFWorkingPoint85Id",                  mithep.ElectronTools.kVBTFWorkingPoint85Id),
+  ("VBTFWorkingPoint80Id",                  mithep.ElectronTools.kVBTFWorkingPoint80Id),
+  ("VBTFWorkingPointLowPtId",               mithep.ElectronTools.kVBTFWorkingPointLowPtId),
+  ("VBTFWorkingPoint70Id",                  mithep.ElectronTools.kVBTFWorkingPoint70Id),
+  #("MVAID_BDTG_NoIPInfo",                   mithep.ElectronTools.kMVAID_BDTG_NoIPInfo),
+  #("MVAID_BDTG_WithIPInfo",                 mithep.ElectronTools.kMVAID_BDTG_WithIPInfo),
+  #("MVAID_BDTG_IDIsoCombined",              mithep.ElectronTools.kMVAID_BDTG_IDIsoCombined),
+  ("HggLeptonTagId",                        mithep.ElectronTools.kHggLeptonTagId),
+  ("HggLeptonTagId2012",                    mithep.ElectronTools.kHggLeptonTagId2012),
+  ("HggLeptonTagId2012HCP",                 mithep.ElectronTools.kHggLeptonTagId2012HCP),
+  #("MVAID_BDTG_IDHWW2012TrigV0",            mithep.ElectronTools.kMVAID_BDTG_IDHWW2012TrigV0),
+  #("MVAID_BDTG_IDIsoCombinedHWW2012TrigV4", mithep.ElectronTools.kMVAID_BDTG_IDIsoCombinedHWW2012TrigV4),
+  ("Phys14Veto",                            mithep.ElectronTools.kPhys14Veto),
+  ("Phys14Loose",                           mithep.ElectronTools.kPhys14Loose),
+  ("Phys14Medium",                          mithep.ElectronTools.kPhys14Medium),
+  ("Phys14Tight",                           mithep.ElectronTools.kPhys14Tight)
 ]
 IsolationAlgos=[
-  ("TrackCalo",                              mithep.MuonTools.kTrackCalo),
-  ("TrackCaloCombined",                      mithep.MuonTools.kTrackCaloCombined),
-  ("TrackCaloSliding",                       mithep.MuonTools.kTrackCaloSliding),                
-  ("TrackCaloSlidingNoCorrection",           mithep.MuonTools.kTrackCaloSlidingNoCorrection),      
-  ("CombinedRelativeConeAreaCorrected",      mithep.MuonTools.kCombinedRelativeConeAreaCorrected), 
-  ("CombinedRelativeEffectiveAreaCorrected", mithep.MuonTools.kCombinedRelativeEffectiveAreaCorrected),
-  ("PFIso",                                  mithep.MuonTools.kPFIso),                             
-  ("PFRadialIso",                            mithep.MuonTools.kPFRadialIso),                       
-  ("PFIsoBetaPUCorrected",                   mithep.MuonTools.kPFIsoBetaPUCorrected),              
-  ("PFIsoBetaPUCorrectedTight",              mithep.MuonTools.kPFIsoBetaPUCorrectedTight),         
-  ("PFIsoEffectiveAreaCorrected",            mithep.MuonTools.kPFIsoEffectiveAreaCorrected),       
-  ("PFIsoNoL",                               mithep.MuonTools.kPFIsoNoL),                          
-  ("NoIso",                                  mithep.MuonTools.kNoIso),                             
-  ("MVAIso_BDTG_IDIso",                      mithep.MuonTools.kMVAIso_BDTG_IDIso),                 
-  ("IsoRingsV0_BDTG_Iso",                    mithep.MuonTools.kIsoRingsV0_BDTG_Iso),               
-  ("IsoDeltaR",                              mithep.MuonTools.kIsoDeltaR)
+  ("TrackCalo",	                           mithep.ElectronTools.kTrackCalo),	
+  ("TrackJura",	                           mithep.ElectronTools.kTrackJura),	
+  ("TrackJuraCombined",	                   mithep.ElectronTools.kTrackJuraCombined),	
+  ("TrackJuraSliding",	                       mithep.ElectronTools.kTrackJuraSliding),	
+  ("TrackJuraSlidingNoCorrection",            mithep.ElectronTools.kTrackJuraSlidingNoCorrection),
+  ("CombinedRelativeConeAreaCorrected",       mithep.ElectronTools.kCombinedRelativeConeAreaCorrected),
+  ("NoIso",	                               mithep.ElectronTools.kNoIso),	
+  ("PFIso",	                               mithep.ElectronTools.kPFIso),	
+  ("PFIsoRhoCorrected",                       mithep.ElectronTools.kPFIsoRhoCorrected),
+  ("PFIsoNoL",	                               mithep.ElectronTools.kPFIsoNoL),	
+  ("ZeeIso",	                               mithep.ElectronTools.kZeeIso),	
+  ("VBTFWorkingPoint95IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint95IndividualIso),
+  ("VBTFWorkingPoint90IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint90IndividualIso),
+  ("VBTFWorkingPoint85IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint85IndividualIso),
+  ("VBTFWorkingPoint80IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint80IndividualIso),
+  ("VBTFWorkingPoint70IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint70IndividualIso),
+  ("VBTFWorkingPoint95CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint95CombinedIso),
+  ("VBTFWorkingPoint90CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint90CombinedIso),
+  ("VBTFWorkingPoint85CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint85CombinedIso),
+  ("VBTFWorkingPoint80CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint80CombinedIso),
+  ("VBTFWorkingPoint70CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint70CombinedIso),
+  ("MVAIso_BDTG_IDIsoCombined",               mithep.ElectronTools.kMVAIso_BDTG_IDIsoCombined),
+  ("PFIso_HWW2012TrigV0",                     mithep.ElectronTools.kPFIso_HWW2012TrigV0),
+  ("PFIso_HggLeptonTag2012",                  mithep.ElectronTools.kPFIso_HggLeptonTag2012),
+  ("PFIso_HggLeptonTag2012HCP",               mithep.ElectronTools.kPFIso_HggLeptonTag2012HCP),
+  ("MVAIso_BDTG_IDIsoCombinedHWW2012TrigV4",  mithep.ElectronTools.kMVAIso_BDTG_IDIsoCombinedHWW2012TrigV4),
+  ("Phys14VetoIso",                           mithep.ElectronTools.kPhys14VetoIso),
+  ("Phys14LooseIso",                          mithep.ElectronTools.kPhys14LooseIso),
+  ("Phys14MediumIso",                         mithep.ElectronTools.kPhys14MediumIso),
+  ("Phys14TightIso",                          mithep.ElectronTools.kPhys14TightIso)
 ]
 for algo in IdAlgos:
-  muonWorker=mithep.MuonIdMod(algo[0],algo[0])
-  muonWorker.SetIsFilterMode(False)
-  muonWorker.SetPtMin(20.)
-  muonWorker.SetEtaMax(2.4)
-  muonWorker.SetIdType(algo[1])
-  muonWorker.SetIsoType(mithep.MuonTools.kNoIso)
-  muonWorker.SetInputName('Muons')
-  muonWorker.SetOutputName(algo[0])
-  muonWorker.SetPFNoPileupCandidatesName('pfNoPU') 
-  muonWorker.SetPFPileupCandidatesName('pfPU')
-  muonWorker.SetVertexName('PrimaryVertexes')
-  muonWorker.SetNonIsolatedMuonsName('Muons')
-  muonWorker.SetNonIsolatedElectronsName('Electrons')
-  Mods.append(muonWorker)
+  electronWorker=mithep.ElectronIdMod(algo[0],algo[0])
+  electronWorker.SetIsFilterMode(False)
+  electronWorker.SetPtMin(20.)
+  electronWorker.SetEtaMax(2.4)
+  electronWorker.SetIdType(algo[1])
+  electronWorker.SetIsoType(mithep.MuonTools.kNoIso)
+  electronWorker.SetInputName('Electrons')
+  electronWorker.SetOutputName(algo[0])
+  electronWorker.SetPFNoPileupCandidatesName('pfNoPU') 
+  electronWorker.SetPFPileupCandidatesName('pfPU')
+  electronWorker.SetVertexName('PrimaryVertexes')
+  electronWorker.SetNonIsolatedMuonsName('Muons')
+  electronWorker.SetNonIsolatedElectronsName('Electrons')
+  Mods.append(electronWorker)
 for algo in IsolationAlgos:
-  muonWorker=mithep.MuonIdMod(algo[0],algo[0])
-  muonWorker.SetIsFilterMode(False)
-  muonWorker.SetPtMin(20.)
-  muonWorker.SetEtaMax(2.4)
-  muonWorker.SetIdType(mithep.MuonTools.kNoId)
-  muonWorker.SetIsoType(algo[1])
-  muonWorker.SetInputName('Muons')
-  muonWorker.SetOutputName(algo[0])
-  muonWorker.SetPFNoPileupCandidatesName('pfNoPU') 
-  muonWorker.SetPFPileupCandidatesName('pfPU')
-  muonWorker.SetVertexName('PrimaryVertexes')
-  muonWorker.SetNonIsolatedMuonsName('Muons')
-  muonWorker.SetNonIsolatedElectronsName('Electrons')
-  Mods.append(muonWorker)
+  electronWorker=mithep.ElectronIdMod(algo[0],algo[0])
+  electronWorker.SetIsFilterMode(False)
+  electronWorker.SetPtMin(20.)
+  electronWorker.SetEtaMax(2.4)
+  electronWorker.SetIdType(mithep.MuonTools.kNoId)
+  electronWorker.SetIsoType(algo[1])
+  electronWorker.SetInputName('Electrons')
+  electronWorker.SetOutputName(algo[0])
+  electronWorker.SetPFNoPileupCandidatesName('pfNoPU') 
+  electronWorker.SetPFPileupCandidatesName('pfPU')
+  electronWorker.SetVertexName('PrimaryVertexes')
+  electronWorker.SetNonIsolatedMuonsName('Muons')
+  electronWorker.SetNonIsolatedElectronsName('Electrons')
+  Mods.append(electronWorker)
 
-BitwiseMuonNtuplesMod = mithep.BitwiseMuonNtuples('BitwiseMuonNtuples', 'Flat ntuples producer')
+BitwiseElectronNtuplesMod = mithep.BitwiseElectronNtuples('BitwiseElectronNtuples', 'Flat ntuples producer')
 for algo in IdAlgos:
-  BitwiseMuonNtuplesMod.AddIdFlag(algo[0],algo[1])
+  BitwiseElectronNtuplesMod.AddIdFlag(algo[0],algo[1])
 for algo in IsolationAlgos:
-  BitwiseMuonNtuplesMod.AddIsoFlag(algo[0],algo[1])
-Mods.append(BitwiseMuonNtuplesMod)
+  BitwiseElectronNtuplesMod.AddIsoFlag(algo[0],algo[1])
+Mods.append(BitwiseElectronNtuplesMod)
 
 seq=Mods[0]
 for mod in Mods[1:]:
   seq*=mod
 analysis.setSequence(seq)
-#analysis.setSequence(hltMod * goodPVMod * pfPUMod * BitwiseMuonNtuplesMod)
 
