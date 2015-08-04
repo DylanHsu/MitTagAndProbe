@@ -43,11 +43,9 @@ void makePairs(
   TTree *eventsTree=(TTree*)inputFileHandler->Get("Events");
 
   // declare leaf types for bitNamesTree
-  vector<string> *vectorClassNames=0;
   vector<string> *vectorIdNames=0;
   vector<string> *vectorIsoNames=0;
   // set branch addresses for bitNamesTree
-  bitNamesTree->SetBranchAddress( "ClassNames",   &vectorClassNames  );
   bitNamesTree->SetBranchAddress( "IdNames",      &vectorIdNames     );
   bitNamesTree->SetBranchAddress( "IsoNames",     &vectorIsoNames    );
   bitNamesTree->GetEntry(0);
@@ -108,7 +106,6 @@ void makePairs(
   UInt_t                      npv;
   vector<int>                 *vectorCharge           = 0;
   vector<TLorentzVector*>     *vectorFourMomentum     = 0;
-  vector<vector<bool> >       *vectorClassBits        = 0;
   vector<vector<bool> >       *vectorIdBits           = 0;
   vector<vector<bool> >       *vectorIsoBits          = 0;
 
@@ -119,7 +116,6 @@ void makePairs(
   eventsTree->SetBranchAddress( "npv",            &npv                );
   eventsTree->SetBranchAddress( "charge",         &vectorCharge       );
   eventsTree->SetBranchAddress( "fourMomentum",   &vectorFourMomentum );
-  eventsTree->SetBranchAddress( "ClassBits",      &vectorClassBits    );
   eventsTree->SetBranchAddress( "IdBits",         &vectorIdBits       );
   eventsTree->SetBranchAddress( "IsoBits",        &vectorIsoBits      );
 
@@ -177,43 +173,43 @@ void makePairs(
     switch(runNum) {    
       case 251244:
         if(
-          lumiSec >= 85 && lumiSec <= 86 ||
-          lumiSec >= 88 && lumiSec <= 93 ||
-          lumiSec >= 96 && lumiSec <= 121 ||
-          lumiSec >= 123 && lumiSec <= 156 ||
-          lumiSec >= 158 && lumiSec <= 428 ||
-          lumiSec >= 430 && lumiSec <= 442
+          ( lumiSec >= 85 && lumiSec <= 86   )  ||
+          ( lumiSec >= 88 && lumiSec <= 93   )  ||
+          ( lumiSec >= 96 && lumiSec <= 121  )  ||
+          ( lumiSec >= 123 && lumiSec <= 156 )  ||
+          ( lumiSec >= 158 && lumiSec <= 428 )  ||
+          ( lumiSec >= 430 && lumiSec <= 442 ) 
         ) isGoodRun=true;
         break;
       case 251251: 
         if(
-          lumiSec >= 1 && lumiSec <= 31 ||
-          lumiSec >= 33 && lumiSec <= 97 ||
-          lumiSec >= 99 && lumiSec <= 167
+          (lumiSec >= 1 && lumiSec <= 31   ) ||
+          (lumiSec >= 33 && lumiSec <= 97  ) ||
+          (lumiSec >= 99 && lumiSec <= 167 )
         ) isGoodRun=true;
         break;
       case 251252: 
         if(
-          lumiSec >= 1 && lumiSec <= 283 ||
-          lumiSec >= 285 && lumiSec <= 505 ||
-          lumiSec >= 507 && lumiSec <= 554
+          (lumiSec >= 1 && lumiSec <= 283   ) ||
+          (lumiSec >= 285 && lumiSec <= 505 ) ||
+          (lumiSec >= 507 && lumiSec <= 554 )
         ) isGoodRun=true;
         break;
       case 251561: 
         if(
-          lumiSec >= 1 && lumiSec <= 94
+          (lumiSec >= 1 && lumiSec <= 94)
         ) isGoodRun=true;
         break;
       case 251562: 
         if(
-          lumiSec >= 1 && lumiSec <= 439 ||
-          lumiSec >= 443 && lumiSec <= 691
+          (lumiSec >= 1 && lumiSec <= 439   ) ||
+          (lumiSec >= 443 && lumiSec <= 691 )
         ) isGoodRun=true;
         break;
       case 251643: 
         if(
-          lumiSec >= 1 && lumiSec <= 216 ||
-          lumiSec >= 222 && lumiSec <= 606
+          (lumiSec >= 1 && lumiSec <= 216   ) ||
+          (lumiSec >= 222 && lumiSec <= 606 ) 
         ) isGoodRun=true;
         break;
       case 251721: 
@@ -223,10 +219,10 @@ void makePairs(
         break;
       case 251883: 
         if(
-          lumiSec >= 56 && lumiSec <= 56 ||
-          lumiSec >= 58 && lumiSec <= 60 ||
-          lumiSec >= 62 && lumiSec <= 144 ||
-          lumiSec >= 156 && lumiSec <= 437
+          (lumiSec >= 56 && lumiSec <= 56  ) ||
+          (lumiSec >= 58 && lumiSec <= 60  ) ||
+          (lumiSec >= 62 && lumiSec <= 144 ) ||
+          (lumiSec >= 156 && lumiSec <= 437)
         ) isGoodRun=true;
         break;
       default:
@@ -291,6 +287,22 @@ void makePairs(
           continue;
         }
         mass = pairSystemTLV.M();
+        double leadingLeptonPt=max(probeTLV->Pt(), tagTLV->Pt());
+        if(leadingLeptonPt<30) {
+          printf("killing event with leading lepton pT = %f GeV having M = %f GeV\n", leadingLeptonPt, mass);
+          continue;
+        }
+        //printf("filling event with leading lepton pT = %f GeV having M = %f GeV\n", leadingLeptonPt, mass);
+        //if(fabs(mass-91.1) > 20 ){
+        //  if(probeTLV->Pt() > tagTLV->Pt()) {
+        //    if(pass==1)
+        //      printf("filling likely background event: leading lepton pT = %f GeV, system M = %f GeV, passed %s, %s\n\trun # %d, LS # %d, evt # %d\n", leadingLeptonPt, mass, passIsoType.c_str(), passIdType.c_str(), runNum, lumiSec, evtNum);
+        //    else
+        //      printf("filling likely background event: leading lepton pT = %f GeV, system M = %f GeV, passed %s, %s\n\trun # %d, LS # %d, evt # %d\n", leadingLeptonPt, mass, probeIsoType.c_str(), probeIdType.c_str(), runNum, lumiSec, evtNum);
+        //  } else {
+        //    printf("filling likely background event: leading lepton pT = %f GeV, system M = %f GeV, passed %s, %s\n\trun # %d, LS # %d, evt # %d\n", leadingLeptonPt, mass, tagIsoType.c_str(), tagIdType.c_str(), runNum, lumiSec, evtNum);
+        //  }
+        //}
         pairTree->Fill(); 
         k++; 
       }
@@ -302,5 +314,177 @@ void makePairs(
   pairTree->Write();
   printf("Wrote %lld entries to file\n", pairTree->GetEntries());
   outputFileHandler->Close();
+  inputFileHandler->Close();
+}
+
+void analyzeLeptonObjects(
+  string inputFile,
+  string IdType    ="Pog2015_Tight",  // ID used for the tag
+  string IsoType   ="PFIso"          // Iso used for the tag
+) {
+  bool debug=true;
+
+  TFile *inputFileHandler=TFile::Open(inputFile.c_str(),"READ");
+  TTree *bitNamesTree=(TTree*)inputFileHandler->FindObjectAny("BitNames");
+  TTree *eventsTree=(TTree*)inputFileHandler->FindObjectAny("Events");
+
+  // declare leaf types for bitNamesTree
+  vector<string> *vectorIdNames=0;
+  vector<string> *vectorIsoNames=0;
+  // set branch addresses for bitNamesTree
+  bitNamesTree->SetBranchAddress( "IdNames",      &vectorIdNames     );
+  bitNamesTree->SetBranchAddress( "IsoNames",     &vectorIsoNames    );
+  bitNamesTree->GetEntry(0);
+
+  // Loop over bit names to find the Id and Iso bits we want
+  // Throw an error if not found
+  int IdKey=-1, IsoKey=-1;
+  unsigned int indexId=0, indexIso=0;
+  for(std::vector<string>::iterator it = vectorIdNames->begin(); it!=vectorIdNames->end(); ++it) {
+    if(debug) printf("Checking %s Id\n",(*it).c_str());
+    if(*it == IdType) {
+      printf("Found IdType \"%s\" in bit names, key is %d\n", IdType.c_str(), indexId);
+      IdKey=indexId;
+    }
+    if(IdKey > 0) break;
+    indexId++;
+  }
+  if(IdKey<0) {
+    printf("Could not find IdType \"%s\" in bit names, exiting", IdType.c_str());
+    return;
+  } 
+  for(std::vector<string>::iterator it = vectorIsoNames->begin(); it!=vectorIsoNames->end(); ++it) {
+    if(debug) printf("Checking %s Iso\n",(*it).c_str());
+    if(*it == IsoType) {
+      printf("Found IsoType \"%s\" in bit names, key is %d\n", IsoType.c_str(), indexIso);
+      IsoKey=indexIso;
+    }
+    if(IsoKey > 0) break;
+    indexIso++;
+  }
+  if(IsoKey<0) {
+    printf("Could not find IsoType \"%s\" in bit names, exiting", IsoType.c_str());
+    return;
+  }
+
+  // declare leaf types for eventsTree
+  UInt_t                      runNum;
+  UInt_t                      lumiSec;
+  UInt_t                      evtNum;
+  UInt_t                      npv;
+  vector<int>                 *vectorCharge           = 0;
+  vector<TLorentzVector*>     *vectorFourMomentum     = 0;
+  vector<vector<bool> >       *vectorIdBits           = 0;
+  vector<vector<bool> >       *vectorIsoBits          = 0;
+
+  // set branch addresses for eventsTree
+  eventsTree->SetBranchAddress( "runNum",         &runNum             );
+  eventsTree->SetBranchAddress( "lumiSec",        &lumiSec            );
+  eventsTree->SetBranchAddress( "evtNum",         &evtNum             );
+  eventsTree->SetBranchAddress( "npv",            &npv                );
+  eventsTree->SetBranchAddress( "charge",         &vectorCharge       );
+  eventsTree->SetBranchAddress( "fourMomentum",   &vectorFourMomentum );
+  eventsTree->SetBranchAddress( "IdBits",         &vectorIdBits       );
+  eventsTree->SetBranchAddress( "IsoBits",        &vectorIsoBits      );
+
+  //     This is the loop skeleton
+  //       To read only selected branches, Insert statements like:
+  // eventsTree->SetBranchStatus("*",0);  // disable all branches
+  // TTreePlayer->SetBranchStatus("branchname",1);  // activate branchname
+
+  // Output tree branch
+  unsigned int pass;                      // whether probe passes requirements
+  float        npu=0;                       // mean number of expected pileup
+  float        scale1fb=1;                  // event weight per 1/fb
+  float        mass;                      // tag-probe mass
+  int          qtag, qprobe;              // tag, probe charge
+  TLorentzVector *tagTLV=0, *probeTLV=0;        // tag, probe 4-vector
+  
+  // Data Bookkeeping
+  Long64_t nentries = eventsTree->GetEntries();
+  Long64_t nbytes = 0;
+  Long64_t NpassedId=0, NpassedIso=0;
+  // Loop over events
+  // Within events, loop over tags {j} probes {k} and make pairs
+  for (Long64_t i=0; i<nentries;i++) {
+  //for (Long64_t i=0; i<5;i++) {
+    nbytes += eventsTree->GetEntry(i);
+    // klugey implementation of golden runs list
+    bool isGoodRun=false;
+    switch(runNum) {    
+      case 251244:
+        if(
+          ( lumiSec >= 85 && lumiSec <= 86   )  ||
+          ( lumiSec >= 88 && lumiSec <= 93   )  ||
+          ( lumiSec >= 96 && lumiSec <= 121  )  ||
+          ( lumiSec >= 123 && lumiSec <= 156 )  ||
+          ( lumiSec >= 158 && lumiSec <= 428 )  ||
+          ( lumiSec >= 430 && lumiSec <= 442 ) 
+        ) isGoodRun=true;
+        break;
+      case 251251: 
+        if(
+          (lumiSec >= 1 && lumiSec <= 31   ) ||
+          (lumiSec >= 33 && lumiSec <= 97  ) ||
+          (lumiSec >= 99 && lumiSec <= 167 )
+        ) isGoodRun=true;
+        break;
+      case 251252: 
+        if(
+          (lumiSec >= 1 && lumiSec <= 283   ) ||
+          (lumiSec >= 285 && lumiSec <= 505 ) ||
+          (lumiSec >= 507 && lumiSec <= 554 )
+        ) isGoodRun=true;
+        break;
+      case 251561: 
+        if(
+          (lumiSec >= 1 && lumiSec <= 94)
+        ) isGoodRun=true;
+        break;
+      case 251562: 
+        if(
+          (lumiSec >= 1 && lumiSec <= 439   ) ||
+          (lumiSec >= 443 && lumiSec <= 691 )
+        ) isGoodRun=true;
+        break;
+      case 251643: 
+        if(
+          (lumiSec >= 1 && lumiSec <= 216   ) ||
+          (lumiSec >= 222 && lumiSec <= 606 ) 
+        ) isGoodRun=true;
+        break;
+      case 251721: 
+        if(
+          lumiSec >= 21 && lumiSec <= 36
+        ) isGoodRun=true;
+        break;
+      case 251883: 
+        if(
+          (lumiSec >= 56 && lumiSec <= 56  ) ||
+          (lumiSec >= 58 && lumiSec <= 60  ) ||
+          (lumiSec >= 62 && lumiSec <= 144 ) ||
+          (lumiSec >= 156 && lumiSec <= 437)
+        ) isGoodRun=true;
+        break;
+      default:
+        break;
+    }
+    if(!isGoodRun) continue;
+    unsigned int j=0; // index for tags
+    for(std::vector<TLorentzVector*>::iterator itTag = vectorFourMomentum->begin(); itTag!=vectorFourMomentum->end(); ++itTag) {
+      // check Id and Iso for the tag candidate
+      if((*vectorIdBits)[j][IdKey]) NpassedId++;
+      if((*vectorIsoBits)[j][IsoKey]) NpassedIso++;
+      tagTLV=new TLorentzVector(
+        (*itTag)->Px(),
+        (*itTag)->Py(),
+        (*itTag)->Pz(),
+        (*itTag)->E()
+      );  
+      qtag = (*vectorCharge)[j];
+      j++;
+    }
+  }
+  printf("total events %lld, %lld passed Id \"%s\", %lld passed Iso \"%s\"\n", nentries, NpassedId, IdType.c_str(), NpassedIso, IsoType.c_str());
   inputFileHandler->Close();
 }
