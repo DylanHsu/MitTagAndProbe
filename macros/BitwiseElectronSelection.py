@@ -27,18 +27,18 @@ pfPUMod.SetPFPileUpName('pfPU')
 Mods.append(pfPUMod)
 
 IdAlgos=[
-  ("Tight",                                 mithep.ElectronTools.kTight),             
-  ("Loose",                                 mithep.ElectronTools.kLoose),             
+  #("Tight",                                 mithep.ElectronTools.kTight),             
+  #("Loose",                                 mithep.ElectronTools.kLoose),             
   #("Likelihood",                            mithep.ElectronTools.kLikelihood),        
   ("NoId",                                  mithep.ElectronTools.kNoId),              
   ("ZeeId",                                 mithep.ElectronTools.kZeeId),             
-  ("VBTFWorkingPointFakeableId",            mithep.ElectronTools.kVBTFWorkingPointFakeableId),
-  ("VBTFWorkingPoint95Id",                  mithep.ElectronTools.kVBTFWorkingPoint95Id),
-  ("VBTFWorkingPoint90Id",                  mithep.ElectronTools.kVBTFWorkingPoint90Id),
-  ("VBTFWorkingPoint85Id",                  mithep.ElectronTools.kVBTFWorkingPoint85Id),
-  ("VBTFWorkingPoint80Id",                  mithep.ElectronTools.kVBTFWorkingPoint80Id),
-  ("VBTFWorkingPointLowPtId",               mithep.ElectronTools.kVBTFWorkingPointLowPtId),
-  ("VBTFWorkingPoint70Id",                  mithep.ElectronTools.kVBTFWorkingPoint70Id),
+  #("VBTFWorkingPointFakeableId",            mithep.ElectronTools.kVBTFWorkingPointFakeableId),
+  #("VBTFWorkingPoint95Id",                  mithep.ElectronTools.kVBTFWorkingPoint95Id),
+  #("VBTFWorkingPoint90Id",                  mithep.ElectronTools.kVBTFWorkingPoint90Id),
+  #("VBTFWorkingPoint85Id",                  mithep.ElectronTools.kVBTFWorkingPoint85Id),
+  #("VBTFWorkingPoint80Id",                  mithep.ElectronTools.kVBTFWorkingPoint80Id),
+  #("VBTFWorkingPointLowPtId",               mithep.ElectronTools.kVBTFWorkingPointLowPtId),
+  #("VBTFWorkingPoint70Id",                  mithep.ElectronTools.kVBTFWorkingPoint70Id),
   #("MVAID_BDTG_NoIPInfo",                   mithep.ElectronTools.kMVAID_BDTG_NoIPInfo),
   #("MVAID_BDTG_WithIPInfo",                 mithep.ElectronTools.kMVAID_BDTG_WithIPInfo),
   #("MVAID_BDTG_IDIsoCombined",              mithep.ElectronTools.kMVAID_BDTG_IDIsoCombined),
@@ -64,21 +64,12 @@ IsolationAlgos=[
   ("PFIsoRhoCorrected",                       mithep.ElectronTools.kPFIsoRhoCorrected),
   ("PFIsoNoL",	                               mithep.ElectronTools.kPFIsoNoL),	
   ("ZeeIso",	                               mithep.ElectronTools.kZeeIso),	
-  ("VBTFWorkingPoint95IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint95IndividualIso),
-  ("VBTFWorkingPoint90IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint90IndividualIso),
-  ("VBTFWorkingPoint85IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint85IndividualIso),
-  ("VBTFWorkingPoint80IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint80IndividualIso),
-  ("VBTFWorkingPoint70IndividualIso",         mithep.ElectronTools.kVBTFWorkingPoint70IndividualIso),
-  ("VBTFWorkingPoint95CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint95CombinedIso),
-  ("VBTFWorkingPoint90CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint90CombinedIso),
-  ("VBTFWorkingPoint85CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint85CombinedIso),
-  ("VBTFWorkingPoint80CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint80CombinedIso),
-  ("VBTFWorkingPoint70CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint70CombinedIso),
-  ("MVAIso_BDTG_IDIsoCombined",               mithep.ElectronTools.kMVAIso_BDTG_IDIsoCombined),
+  #("VBTFWorkingPoint70CombinedIso",           mithep.ElectronTools.kVBTFWorkingPoint70CombinedIso),
+  #("MVAIso_BDTG_IDIsoCombined",               mithep.ElectronTools.kMVAIso_BDTG_IDIsoCombined),
   ("PFIso_HWW2012TrigV0",                     mithep.ElectronTools.kPFIso_HWW2012TrigV0),
   ("PFIso_HggLeptonTag2012",                  mithep.ElectronTools.kPFIso_HggLeptonTag2012),
   ("PFIso_HggLeptonTag2012HCP",               mithep.ElectronTools.kPFIso_HggLeptonTag2012HCP),
-  ("MVAIso_BDTG_IDIsoCombinedHWW2012TrigV4",  mithep.ElectronTools.kMVAIso_BDTG_IDIsoCombinedHWW2012TrigV4),
+  #("MVAIso_BDTG_IDIsoCombinedHWW2012TrigV4",  mithep.ElectronTools.kMVAIso_BDTG_IDIsoCombinedHWW2012TrigV4),
   ("Phys14VetoIso",                           mithep.ElectronTools.kPhys14VetoIso),
   ("Phys14LooseIso",                          mithep.ElectronTools.kPhys14LooseIso),
   ("Phys14MediumIso",                         mithep.ElectronTools.kPhys14MediumIso),
@@ -87,7 +78,7 @@ IsolationAlgos=[
 for algo in IdAlgos:
   electronWorker=mithep.ElectronIdMod(algo[0],algo[0])
   electronWorker.SetIsFilterMode(False)
-  electronWorker.SetPtMin(20.)
+  electronWorker.SetPtMin(10.)
   electronWorker.SetEtaMax(2.4)
   electronWorker.SetIdType(algo[1])
   electronWorker.SetIsoType(mithep.ElectronTools.kNoIso)
@@ -98,11 +89,16 @@ for algo in IdAlgos:
   electronWorker.SetVertexName('PrimaryVertexes')
   electronWorker.SetNonIsolatedMuonsName('Muons')
   electronWorker.SetNonIsolatedElectronsName('Electrons')
+  electronWorker.SetApplyConversionFilterType1(False)
+  electronWorker.SetChargeFilter(False)
+  electronWorker.SetApplyNExpectedHitsInnerCut(False)
+  electronWorker.SetApplyD0Cut(False)
+  electronWorker.SetApplyDZCut(False)
   Mods.append(electronWorker)
 for algo in IsolationAlgos:
   electronWorker=mithep.ElectronIdMod(algo[0],algo[0])
   electronWorker.SetIsFilterMode(False)
-  electronWorker.SetPtMin(20.)
+  electronWorker.SetPtMin(10.)
   electronWorker.SetEtaMax(2.4)
   electronWorker.SetIdType(mithep.ElectronTools.kNoId)
   electronWorker.SetIsoType(algo[1])
@@ -113,6 +109,11 @@ for algo in IsolationAlgos:
   electronWorker.SetVertexName('PrimaryVertexes')
   electronWorker.SetNonIsolatedMuonsName('Muons')
   electronWorker.SetNonIsolatedElectronsName('Electrons')
+  electronWorker.SetApplyConversionFilterType1(False)
+  electronWorker.SetChargeFilter(False)
+  electronWorker.SetApplyNExpectedHitsInnerCut(False)
+  electronWorker.SetApplyD0Cut(False)
+  electronWorker.SetApplyDZCut(False)
   Mods.append(electronWorker)
 
 BitwiseElectronNtuplesMod = mithep.BitwiseElectronNtuples('BitwiseElectronNtuples', 'Flat ntuples producer')
