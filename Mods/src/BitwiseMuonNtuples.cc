@@ -4,7 +4,9 @@
 #include "MitAna/DataTree/interface/Names.h"
 #include "MitPhysics/Utils/interface/MuonTools.h"
 #include "MitPhysics/Mods/interface/MuonIdMod.h"
-
+#include "MitAna/DataTree/interface/EventHeader.h"
+#include "MitAna/DataTree/interface/MCParticleCol.h"
+#include "MitCommon/MathTools/interface/MathUtils.h"
 #include "TVector2.h"
 #include "TLorentzVector.h"
 #include <vector>
@@ -46,6 +48,30 @@ mithep::BitwiseMuonNtuples::Process()
   mithep::MuonCol* allMuons = GetObject<mithep::MuonCol>(fAllMuonsName);
   mithep::VertexCol* Vertices = GetObject<mithep::VertexCol>(fPVName);
 
+  auto* eventHeader = GetEventHeader();
+  MCParticleCol* mcParticles = 0;
+  MCParticle* mcMuons[2] = {};
+  if (eventHeader->IsMC()) {
+    mcParticles = GetObject<MCParticleCol>("MCParticles");
+
+    for (unsigned iM = 0; iM != mcParticles->GetEntries(); ++iM) {
+      auto& part(*mcParticles->At(iM));
+
+      if (part.Status() !=1) // status == 1 -> final-state particle
+        continue;
+      if (std::abs(part.PdgId()) != 13) // pdgId == +-13 -> muon
+        continue;
+      auto* mother = part.DistinctMother(); // go up the decay chain until first non-muon ancestor is found
+      if (!mother || mother->PdgId() != 23) // pdgId == 23 -> Z
+        continue;
+
+      if (part.Charge() > 0)
+        mcMuons[0] = &part;
+      else
+        mcMuons[1] = &part;
+    }
+  }
+
   if (!allMuons) {
     std::cerr << "Could not find muons in this event." << std::endl;
     return;
@@ -75,6 +101,10 @@ mithep::BitwiseMuonNtuples::Process()
     Muon const &muon(*allMuons->At(iP));
     vector<bool> MuIdTypeBits(NIdTypes); 
     vector<bool> MuIsoTypeBits(NIsoTypes); 
+    bool MuMCMatch=false;
+    if (mcMuons[0] && MathUtils::DeltaR(muon.Phi(), muon.Eta(), mcMuons[0]->Phi(), mcMuons[0]->Eta()) < 0.1)
+      MuMCMatch = true;
+
     // Set bits for Muon id types
     for(unsigned int iType=0; iType != NIdTypes; iType++) {
       //MuonTools::EMuIdType MuonIdType = MuIdTypes[iType];
@@ -109,6 +139,7 @@ mithep::BitwiseMuonNtuples::Process()
     MuIdTypeBits_.push_back(MuIdTypeBits);
     MuIsoTypeBits_.push_back(MuIsoTypeBits);
     charge_.push_back(charge);
+    MuMCMatch_.push_back(MuMCMatch);
     fourMomentum_.push_back(fourMomentum);
     
   }
@@ -116,6 +147,7 @@ mithep::BitwiseMuonNtuples::Process()
   MuIdTypeBits_.resize(0);
   MuIsoTypeBits_.resize(0);
   charge_.resize(0);
+  MuMCMatch_.resize(0);
   fourMomentum_.resize(0);
 }
 
@@ -144,7 +176,8 @@ mithep::BitwiseMuonNtuples::SlaveBegin()
   fNtuplesTree->Branch("fourMomentum", "vector<TLorentzVector*>", &fourMomentum_ );         
   fNtuplesTree->Branch("IdBits", "vector< vector<bool> >", &MuIdTypeBits_);
   fNtuplesTree->Branch("IsoBits", "vector< vector<bool> >", &MuIsoTypeBits_);
- 
+  fNtuplesTree->Branch("MCMatch", "vector<bool>", &MuMCMatch_);
+
   //histo outputs
   fIdHisto = new TH1F("Counts by Id","", 1, 0, 1);
   fIsoHisto= new TH1F("Counts by Iso","", 1, 0, 1);

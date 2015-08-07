@@ -39,6 +39,7 @@ namespace mithep {
     vector<MuonTools::EMuIsoType> MuIsoTypes;
     vector< vector<bool> > MuIdTypeBits_;
     vector< vector<bool> > MuIsoTypeBits_;
+    vector<bool> MuMCMatch_;
     unsigned int NIdTypes    = 0; 
     unsigned int NIsoTypes   = 0;
     
